@@ -1,0 +1,30 @@
+<div class="log-container">
+  <h2>Suivi logistique</h2>
+
+  <div *ngIf="demandes.length; else empty">
+    <a *ngFor="let d of demandes" [routerLink]="'/logistique/' + d.id" class="card">
+      <div class="card-row">
+        <div class="adresse">
+          <span class="label">Départ</span>
+          <p>{{ d.adresseDepart }}</p>
+        </div>
+        <span class="arrow">→</span>
+        <div class="adresse">
+          <span class="label">Arrivée</span>
+          <p>{{ d.adresseArrivee }}</p>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="badge" [class]="badgeClass(d.statut)">{{ statutLabel(d.statut) }}</span>
+        <span class="frais" *ngIf="d.frais">{{ d.frais | number }} FCFA</span>
+      </div>
+    </a>
+  </div>
+
+  <ng-template #empty>
+    <div class="empty">
+      <p>Aucune livraison en cours.</p>
+      <a routerLink="/marketplace/commande" class="btn-link">Voir mes commandes</a>
+    </div>
+  </ng-template>
+</div>

@@ -1,0 +1,50 @@
+<div class="forum-container">
+  <div class="forum-header">
+    <div class="tabs">
+      <button [class.active]="onglet === 'forum'" (click)="onglet = 'forum'">Forum</button>
+      <button [class.active]="onglet === 'apprentissage'" (click)="onglet = 'apprentissage'">Apprentissage</button>
+    </div>
+    <a routerLink="/forum/ajouter" class="btn-add" *ngIf="onglet === 'forum'">
+      + Nouvel article
+    </a>
+  </div>
+
+  <!-- Forum -->
+  <ng-container *ngIf="onglet === 'forum'">
+    <div class="filter-bar" *ngIf="categories.length">
+      <select [(ngModel)]="filtreCategorie">
+        <option value="">Toutes les catégories</option>
+        <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+      </select>
+    </div>
+
+    <div *ngIf="articlesFiltres.length; else empty">
+      <a *ngFor="let a of articlesFiltres" [routerLink]="'/forum/' + a.id" class="card">
+        <div class="card-body">
+          <h3>{{ a.titre }}</h3>
+          <p class="categ">{{ a.categorie }}</p>
+          <p class="preview">{{ a.contenu | slice:0:120 }}...</p>
+          <p class="meta">{{ a.auteurNom }} — {{ a.datePublication | date:'dd/MM/yyyy' }}</p>
+        </div>
+      </a>
+    </div>
+  </ng-container>
+
+  <!-- Apprentissage -->
+  <ng-container *ngIf="onglet === 'apprentissage'">
+    <div *ngIf="apprentissages.length; else empty">
+      <div *ngFor="let c of apprentissages" class="card apprentissage">
+        <div class="card-body">
+          <h3>{{ c.titre }}</h3>
+          <p class="categ">{{ c.typeContenu }}</p>
+          <p class="preview">{{ c.contenu | slice:0:150 }}...</p>
+          <p class="meta" *ngIf="c.estValide">✅ Contenu validé</p>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #empty>
+    <div class="empty">Aucun contenu pour le moment.</div>
+  </ng-template>
+</div>

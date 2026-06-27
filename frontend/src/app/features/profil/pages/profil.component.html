@@ -1,0 +1,54 @@
+<div class="profil-container">
+  <h2>Mon profil</h2>
+
+  <div class="quick-links">
+    <a routerLink="/produits/dashboard">Mes produits</a>
+    <a routerLink="/materiel">Mes annonces matériel</a>
+    <a routerLink="/logistique">Mes livraisons</a>
+  </div>
+
+  <div class="tabs">
+    <button [class.active]="onglet === 'commandes'" (click)="onglet = 'commandes'">Mes commandes</button>
+    <button [class.active]="onglet === 'parametres'" (click)="onglet = 'parametres'">Paramètres</button>
+  </div>
+
+  <!-- Commandes -->
+  <ng-container *ngIf="onglet === 'commandes'">
+    <div *ngIf="commandes.length; else emptyCmd">
+      <div *ngFor="let c of commandes" class="card">
+        <h3>Commande #{{ c.id | slice:0:8 }}</h3>
+        <p class="meta">{{ c.dateCreation | date:'dd/MM/yyyy HH:mm' }}</p>
+        <p *ngFor="let l of c.lignes">{{ l.produitTitre }} x{{ l.quantite }} — {{ l.prixUnitaire * l.quantite | number }} FCFA</p>
+        <p><strong>Total : {{ c.montantTotal | number }} FCFA</strong></p>
+        <span class="badge" [class]="statutClass(c.statut)">{{ c.statut }}</span>
+      </div>
+    </div>
+    <ng-template #emptyCmd><div class="empty">Aucune commande pour le moment.</div></ng-template>
+  </ng-container>
+
+  <!-- Paramètres -->
+  <ng-container *ngIf="onglet === 'parametres'">
+    <div class="card">
+      <p class="msg" *ngIf="message">{{ message }}</p>
+      <div class="form-group">
+        <label>Prénom</label>
+        <input type="text" [(ngModel)]="editPrenom" />
+      </div>
+      <div class="form-group">
+        <label>Nom</label>
+        <input type="text" [(ngModel)]="editNom" />
+      </div>
+      <div class="form-group">
+        <label>Téléphone</label>
+        <input type="tel" [(ngModel)]="editTelephone" />
+      </div>
+      <div class="form-group">
+        <label>Localité</label>
+        <input type="text" [(ngModel)]="editLocalite" />
+      </div>
+      <button class="btn-submit" (click)="sauvegarder()" [disabled]="enCours">
+        {{ enCours ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </ng-container>
+</div>

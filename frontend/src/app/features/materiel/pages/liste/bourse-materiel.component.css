@@ -1,0 +1,86 @@
+.materiel-container { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+.materiel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.materiel-header h2 { font-size: 1.4rem; }
+
+.btn-add {
+  padding: 0.6rem 1.2rem;
+  background: #1a5c2a;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.btn-add:hover { background: #2e7d32; }
+
+.filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.filter-tabs button {
+  padding: 0.4rem 1rem;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.filter-tabs button.active {
+  background: #1a5c2a;
+  color: #fff;
+  border-color: #1a5c2a;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s;
+}
+.card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+
+.card-img {
+  height: 120px;
+  background: #fff3e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #e65100;
+}
+
+.card-body { padding: 0.85rem; }
+.card-body h3 { font-size: 0.95rem; margin-bottom: 0.3rem; }
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.badge.vente { background: #e3f2fd; color: #1565c0; }
+.badge.echange { background: #fff3e0; color: #e65100; }
+
+.price { color: #1a5c2a; font-weight: 600; font-size: 0.9rem; margin-top: 0.3rem; }
+.meta { color: #666; font-size: 0.75rem; margin-top: 0.15rem; }
+.empty { text-align: center; padding: 3rem; color: #888; }

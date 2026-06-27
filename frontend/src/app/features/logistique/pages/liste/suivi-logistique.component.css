@@ -1,0 +1,30 @@
+.log-container { max-width: 720px; margin: 0 auto; padding: 1.5rem 1rem; }
+h2 { font-size: 1.4rem; margin-bottom: 1rem; }
+
+.card {
+  display: block;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+}
+.card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+
+.card-row { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.5rem; }
+.adresse { flex: 1; }
+.adresse .label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
+.adresse p { font-size: 0.85rem; margin: 0; }
+.arrow { color: #1a5c2a; font-weight: 700; margin-top: 1rem; }
+
+.card-footer { display: flex; justify-content: space-between; align-items: center; }
+.badge { padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+.badge.attente { background: #fff3e0; color: #e65100; }
+.badge.encours { background: #e3f2fd; color: #1565c0; }
+.badge.livree { background: #e8f5e9; color: #2e7d32; }
+.badge.annulee { background: #ffebee; color: #c62828; }
+.frais { color: #1a5c2a; font-weight: 600; }
+.empty { text-align: center; padding: 3rem; color: #888; }
+.btn-link { display: inline-block; margin-top: 0.5rem; color: #1a5c2a; }

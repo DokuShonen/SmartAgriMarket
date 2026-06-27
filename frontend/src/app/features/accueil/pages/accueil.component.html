@@ -1,0 +1,113 @@
+<!-- Hero -->
+<section class="hero">
+  <div class="container hero-content">
+    <h1>Le marché agricole, <br>directement du producteur</h1>
+    <p>Achetez et vendez sans intermédiaire sur la première marketplace agricole</p>
+    <div class="search-bar">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        placeholder="Rechercher un produit, une localité..."
+        (keyup.enter)="searchQuery && onSearch()"
+      />
+      <button [routerLink]="'/produits'">Rechercher</button>
+    </div>
+  </div>
+</section>
+
+<!-- Catégories -->
+<section class="section" *ngIf="categories.length">
+  <div class="container">
+    <h2 class="section-title">Catégories</h2>
+    <div class="categories-grid">
+      <a
+        *ngFor="let c of categories"
+        [routerLink]="'/produits'"
+        class="category-card"
+      >
+        <span class="category-icon">🌾</span>
+        <span class="category-name">{{ c.nom }}</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Produits vedettes -->
+<section class="section bg-light" *ngIf="produitsVedettes.length">
+  <div class="container">
+    <h2 class="section-title">Produits vedettes de la semaine</h2>
+    <div class="product-grid">
+      <a
+        *ngFor="let v of produitsVedettes"
+        [routerLink]="'/produits/' + v.produit.id"
+        class="product-card"
+      >
+        <div class="card-img">{{ v.produit.titre.charAt(0) }}</div>
+        <div class="card-body">
+          <h3>{{ v.produit.titre }}</h3>
+          <p class="price">{{ v.produit.prix | number }} FCFA / {{ v.produit.uniteVente }}</p>
+          <p class="meta">{{ v.produit.localite }} — {{ v.produit.categorie }}</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Cours des semences -->
+<section class="section" *ngIf="coursSemences.length">
+  <div class="container">
+    <h2 class="section-title">Cours des semences</h2>
+    <div class="filter-bar">
+      <select [(ngModel)]="semenceFilter">
+        <option value="">Toutes les localités</option>
+        <option *ngFor="let l of uniqueLocalites" [value]="l">{{ l }}</option>
+      </select>
+    </div>
+    <div class="table-wrapper">
+      <table class="price-table">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Prix (FCFA)</th>
+            <th>Localité</th>
+            <th>Dernière mise à jour</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of filteredSemences">
+            <td>{{ s.produit }}</td>
+            <td><strong>{{ s.prix | number }}</strong></td>
+            <td>{{ s.localite }}</td>
+            <td class="date-cell">{{ s.dateMAJ | date:'dd/MM/yyyy' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Dernières annonces -->
+<section class="section bg-light" *ngIf="derniersProduits.length">
+  <div class="container">
+    <h2 class="section-title">Dernières annonces</h2>
+    <div class="product-grid">
+      <a
+        *ngFor="let p of derniersProduits"
+        [routerLink]="'/produits/' + p.id"
+        class="product-card"
+      >
+        <div class="card-img">{{ p.titre.charAt(0) }}</div>
+        <div class="card-body">
+          <h3>{{ p.titre }}</h3>
+          <p class="price">{{ p.prix | number }} FCFA / {{ p.uniteVente }}</p>
+          <p class="meta">{{ p.localite }} — {{ p.categorie }}</p>
+        </div>
+      </a>
+    </div>
+    <div class="text-center">
+      <a routerLink="/produits" class="btn-link">Voir tous les produits →</a>
+    </div>
+  </div>
+</section>
+
+

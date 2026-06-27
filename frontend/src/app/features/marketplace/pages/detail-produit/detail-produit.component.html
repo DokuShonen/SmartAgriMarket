@@ -1,0 +1,37 @@
+<div class="detail-container" *ngIf="produit">
+  <a routerLink="/produits" class="back-link">← Retour au catalogue</a>
+
+  <div class="detail-layout">
+    <div class="detail-image">
+      <div class="img-placeholder">{{ produit.titre.charAt(0) }}</div>
+    </div>
+
+    <div class="detail-info">
+      <h1>{{ produit.titre }}</h1>
+      <p class="categorie-badge">{{ produit.categorie }}</p>
+
+      <p class="detail-price">{{ produit.prix | number }} FCFA / {{ produit.uniteVente }}</p>
+
+      <p class="detail-desc">{{ produit.description }}</p>
+
+      <div class="detail-meta">
+        <div><strong>Disponible :</strong> {{ produit.quantiteDisponible }} {{ produit.uniteVente }}</div>
+        <div><strong>Vendeur :</strong> {{ produit.vendeurNom }}</div>
+        <div><strong>Localité :</strong> {{ produit.localite }}</div>
+        <div *ngIf="produit.conditionsLivraison"><strong>Livraison :</strong> {{ produit.conditionsLivraison }}</div>
+      </div>
+
+      <div class="actions">
+        <div class="qty-selector">
+          <button (click)="decrementer()" [disabled]="quantite <= 1">−</button>
+          <input type="number" [(ngModel)]="quantite" min="1" [max]="produit.quantiteDisponible" />
+          <button (click)="incrementer()" [disabled]="quantite >= produit.quantiteDisponible">+</button>
+        </div>
+
+        <button class="btn-primary" (click)="ajouterAuPanier()" [disabled]="produit.quantiteDisponible < 1">
+          {{ ajouteAuPanier ? '✓ Ajouté !' : 'Ajouter au panier' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

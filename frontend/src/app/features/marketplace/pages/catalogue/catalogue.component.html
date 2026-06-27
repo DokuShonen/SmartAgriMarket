@@ -1,0 +1,67 @@
+<div class="catalogue-container">
+  <!-- Filtres -->
+  <aside class="filter-sidebar">
+    <h3>Filtres</h3>
+
+    <div class="filter-group">
+      <label>Mot-clé</label>
+      <input type="text" [(ngModel)]="keyword" (input)="onSearch()" placeholder="Rechercher..." />
+    </div>
+
+    <div class="filter-group">
+      <label>Catégorie</label>
+      <select [(ngModel)]="selectedCategorie" (change)="onSearch()">
+        <option value="">Toutes</option>
+        <option *ngFor="let c of categories" [value]="c.id">{{ c.nom }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Localité</label>
+      <input type="text" [(ngModel)]="localite" (input)="onSearch()" placeholder="Ville, région..." />
+    </div>
+
+    <div class="filter-group">
+      <label>Prix min (FCFA)</label>
+      <input type="number" [(ngModel)]="prixMin" (input)="onSearch()" placeholder="0" />
+    </div>
+
+    <div class="filter-group">
+      <label>Prix max (FCFA)</label>
+      <input type="number" [(ngModel)]="prixMax" (input)="onSearch()" placeholder="999999" />
+    </div>
+  </aside>
+
+  <!-- Résultats -->
+  <main class="results">
+    <div class="results-header">
+      <h2>Produits</h2>
+      <span class="count" *ngIf="totalElements > 0">{{ totalElements }} résultat(s)</span>
+    </div>
+
+    <div class="product-grid" *ngIf="produits.length; else empty">
+      <a *ngFor="let p of produits" [routerLink]="[p.id]" class="product-card">
+        <div class="card-img">{{ p.titre.charAt(0) }}</div>
+        <div class="card-body">
+          <h3>{{ p.titre }}</h3>
+          <p class="price">{{ p.prix | number }} FCFA / {{ p.uniteVente }}</p>
+          <p class="meta">{{ p.localite }} — {{ p.categorie }}</p>
+          <p class="stock" [class.low]="p.quantiteDisponible < 5">
+            {{ p.quantiteDisponible }} dispo.
+          </p>
+        </div>
+      </a>
+    </div>
+
+    <ng-template #empty>
+      <div class="empty">Aucun produit trouvé.</div>
+    </ng-template>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button (click)="prevPage()" [disabled]="page === 0">← Précédent</button>
+      <span>Page {{ page + 1 }} / {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="page >= totalPages - 1">Suivant →</button>
+    </div>
+  </main>
+</div>

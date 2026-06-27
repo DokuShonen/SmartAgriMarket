@@ -1,0 +1,48 @@
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a routerLink="/" class="logo">SmartAgriMarket</a>
+    <nav class="nav-links">
+      <a routerLink="/produits">Produits</a>
+      <a routerLink="/materiel">Matériel</a>
+      <a routerLink="/messagerie">Messagerie</a>
+      <a routerLink="/forum">Forum</a>
+      <a routerLink="/logistique">Livraisons</a>
+    </nav>
+    <div class="auth-links">
+      <ng-container *ngIf="auth.utilisateur(); else guest">
+        <a routerLink="/profil" class="user-name">{{ auth.utilisateur()!.prenom }}</a>
+        <a routerLink="/admin" class="btn-admin" *ngIf="auth.utilisateur()?.type === 'ADMIN'">Admin</a>
+        <button class="btn-logout" (click)="deconnexion()">Déconnexion</button>
+      </ng-container>
+      <ng-template #guest>
+        <a routerLink="/connexion" class="btn-login">Connexion</a>
+        <a routerLink="/inscription" class="btn-register">Inscription</a>
+      </ng-template>
+    </div>
+  </div>
+</header>
+<main><router-outlet /></main>
+
+<!-- Mobile bottom nav -->
+<nav class="bottom-nav">
+  <a routerLink="/" class="nav-item" [class.active]="isActive('/')">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Accueil</span>
+  </a>
+  <a routerLink="/produits" class="nav-item" [class.active]="isActive('/produits')">
+    <span class="nav-icon">🌾</span>
+    <span class="nav-label">Produits</span>
+  </a>
+  <a routerLink="/materiel" class="nav-item" [class.active]="isActive('/materiel')">
+    <span class="nav-icon">🔧</span>
+    <span class="nav-label">Matériel</span>
+  </a>
+  <a routerLink="/messagerie" class="nav-item" [class.active]="isActive('/messagerie')">
+    <span class="nav-icon">💬</span>
+    <span class="nav-label">Messages</span>
+  </a>
+  <a routerLink="/profil" class="nav-item" [class.active]="isActive('/profil')">
+    <span class="nav-icon">👤</span>
+    <span class="nav-label">Profil</span>
+  </a>
+</nav>

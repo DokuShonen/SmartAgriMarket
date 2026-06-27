@@ -1,0 +1,55 @@
+<div class="form-container">
+  <a routerLink="/produits/dashboard" class="back-link">← Retour</a>
+  <h2>{{ editionId ? 'Modifier' : 'Nouveau' }} produit</h2>
+
+  <form (ngSubmit)="submit()" #form="ngForm">
+    <div class="form-group">
+      <label>Titre *</label>
+      <input type="text" [(ngModel)]="titre" name="titre" required />
+    </div>
+
+    <div class="form-group">
+      <label>Description</label>
+      <textarea [(ngModel)]="description" name="description" rows="3"></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Prix (FCFA) *</label>
+        <input type="number" [(ngModel)]="prix" name="prix" required min="0" />
+      </div>
+      <div class="form-group">
+        <label>Unité de vente *</label>
+        <input type="text" [(ngModel)]="uniteVente" name="uniteVente" required placeholder="kg, sac, tas..." />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Quantité disponible *</label>
+        <input type="number" [(ngModel)]="quantiteDisponible" name="quantiteDisponible" required min="1" />
+      </div>
+      <div class="form-group">
+        <label>Catégorie *</label>
+        <select [(ngModel)]="categorieId" name="categorieId" required>
+          <option value="">Sélectionner...</option>
+          <option *ngFor="let c of categories" [value]="c.id">{{ c.nom }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Localité *</label>
+      <input type="text" [(ngModel)]="localite" name="localite" required placeholder="Ville, région..." />
+    </div>
+
+    <div class="form-group">
+      <label>Conditions de livraison</label>
+      <input type="text" [(ngModel)]="conditionsLivraison" name="conditionsLivraison" placeholder="Retrait possible, livraison sous..." />
+    </div>
+
+    <button type="submit" class="btn-submit" [disabled]="enCours || !form.valid">
+      {{ enCours ? 'Enregistrement...' : editionId ? 'Mettre à jour' : 'Publier l\'annonce' }}
+    </button>
+  </form>
+</div>

@@ -1,0 +1,33 @@
+<div class="panier-container">
+  <h2>Mon panier</h2>
+
+  <div *ngIf="items.length; else emptyPanier">
+    <div class="panier-item" *ngFor="let item of items">
+      <div class="item-img">{{ item.produit.titre.charAt(0) }}</div>
+      <div class="item-info">
+        <a [routerLink]="'/produits/' + item.produit.id" class="item-title">{{ item.produit.titre }}</a>
+        <p class="item-price">{{ item.produit.prix | number }} FCFA / {{ item.produit.uniteVente }}</p>
+        <p class="item-vendeur">{{ item.produit.vendeurNom }} — {{ item.produit.localite }}</p>
+      </div>
+      <div class="item-qty">
+        <button (click)="updateQte(item.produit.id, item.quantite - 1)" [disabled]="item.quantite <= 1">−</button>
+        <span>{{ item.quantite }}</span>
+        <button (click)="updateQte(item.produit.id, item.quantite + 1)" [disabled]="item.quantite >= item.produit.quantiteDisponible">+</button>
+      </div>
+      <div class="item-subtotal">{{ (item.produit.prix * item.quantite) | number }} FCFA</div>
+      <button class="btn-remove" (click)="retirer(item.produit.id)">✕</button>
+    </div>
+
+    <div class="panier-footer">
+      <div class="panier-total">Total : <strong>{{ total | number }} FCFA</strong></div>
+      <a routerLink="/produits/commande" class="btn-checkout">Passer la commande</a>
+    </div>
+  </div>
+
+  <ng-template #emptyPanier>
+    <div class="empty-panier">
+      <p>Votre panier est vide.</p>
+      <a routerLink="/produits" class="btn-link">Voir les produits</a>
+    </div>
+  </ng-template>
+</div>

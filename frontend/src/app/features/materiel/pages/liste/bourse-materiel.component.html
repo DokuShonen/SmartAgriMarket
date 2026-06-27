@@ -1,0 +1,28 @@
+<div class="materiel-container">
+  <div class="materiel-header">
+    <h2>Bourse d'échange de matériel agricole</h2>
+    <a routerLink="/materiel/ajouter" class="btn-add">+ Publier une annonce</a>
+  </div>
+
+  <div class="filter-tabs">
+    <button [class.active]="!filtreType" (click)="filtreType = ''">Tout</button>
+    <button [class.active]="filtreType === 'VENTE'" (click)="filtreType = 'VENTE'">Vente</button>
+    <button [class.active]="filtreType === 'ECHANGE'" (click)="filtreType = 'ECHANGE'">Échange</button>
+  </div>
+
+  <div class="grid" *ngIf="filtrees.length; else empty">
+    <a *ngFor="let a of filtrees" [routerLink]="[a.id]" class="card">
+      <div class="card-img">{{ a.titre.charAt(0) }}</div>
+      <div class="card-body">
+        <h3>{{ a.titre }}</h3>
+        <p class="badge" [class.vente]="a.typeTransaction === 'VENTE'" [class.echange]="a.typeTransaction === 'ECHANGE'">
+          {{ a.typeTransaction === 'VENTE' ? 'Vente' : 'Échange' }}
+        </p>
+        <p class="price">{{ a.prix ? (a.prix | number) + ' FCFA' : 'Prix à discuter' }}</p>
+        <p class="meta">{{ a.etat === 'NEUF' ? 'Neuf' : 'Occasion' }} — {{ a.localite }}</p>
+      </div>
+    </a>
+  </div>
+
+  <ng-template #empty><div class="empty">Aucune annonce pour le moment.</div></ng-template>
+</div>

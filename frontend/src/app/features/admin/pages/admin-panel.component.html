@@ -1,0 +1,64 @@
+<div class="admin-container">
+  <h2>Administration</h2>
+  <p class="sub">Modération du contenu et gestion des utilisateurs</p>
+
+  <div class="tabs">
+    <button [class.active]="onglet === 'forum'" (click)="onglet = 'forum'">Articles forum</button>
+    <button [class.active]="onglet === 'apprentissage'" (click)="onglet = 'apprentissage'">Contenus apprentissage</button>
+    <button [class.active]="onglet === 'utilisateurs'" (click)="onglet = 'utilisateurs'">Utilisateurs</button>
+  </div>
+
+  <!-- Forum -->
+  <ng-container *ngIf="onglet === 'forum'">
+    <div *ngIf="articles.length; else empty">
+      <div *ngFor="let a of articles" class="card">
+        <h3>{{ a.titre }}</h3>
+        <p class="meta">{{ a.categorie }} — {{ a.auteurNom }} — {{ a.datePublication | date:'dd/MM/yyyy' }}</p>
+        <span class="badge" [class.ok]="a.estModere" [class.non]="!a.estModere">
+          {{ a.estModere ? 'Approuvé' : 'En attente' }}
+        </span>
+        <div class="actions">
+          <button class="btn btn-approve" *ngIf="!a.estModere" (click)="moderer(a.id, true)">Approuver</button>
+          <button class="btn btn-reject" *ngIf="a.estModere" (click)="moderer(a.id, false)">Désapprouver</button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Apprentissage -->
+  <ng-container *ngIf="onglet === 'apprentissage'">
+    <div *ngIf="apprentissages.length; else empty">
+      <div *ngFor="let c of apprentissages" class="card">
+        <h3>{{ c.titre }}</h3>
+        <p class="meta">{{ c.typeContenu }}</p>
+        <span class="badge" [class.ok]="c.estValide" [class.non]="!c.estValide">
+          {{ c.estValide ? 'Validé' : 'En attente' }}
+        </span>
+        <div class="actions">
+          <button class="btn btn-approve" *ngIf="!c.estValide" (click)="validerApprentissage(c.id)">Valider</button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Utilisateurs -->
+  <ng-container *ngIf="onglet === 'utilisateurs'">
+    <div *ngIf="utilisateurs.length; else empty">
+      <table>
+        <thead><tr><th>Nom</th><th>Email</th><th>Type</th><th>Localité</th><th>Vérifié</th><th></th></tr></thead>
+        <tbody>
+          <tr *ngFor="let u of utilisateurs">
+            <td>{{ u.prenom }} {{ u.nom }}</td>
+            <td>{{ u.email }}</td>
+            <td><span class="badge admin">{{ u.type }}</span></td>
+            <td>{{ u.localite }}</td>
+            <td>{{ u.estVerifie ? '✓' : '—' }}</td>
+            <td><button class="btn btn-delete" (click)="supprimerUtilisateur(u.id)">Supprimer</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+
+  <ng-template #empty><div class="empty">Aucun contenu.</div></ng-template>
+</div>

@@ -1,0 +1,46 @@
+<div class="commande-container">
+  <a routerLink="/produits/panier" class="back-link">← Retour au panier</a>
+  <h2>Finaliser la commande</h2>
+
+  <div *ngIf="success" class="success-msg">
+    ✓ Commande passée avec succès ! Redirection...
+  </div>
+
+  <div *ngIf="!success && items.length; else emptyCart">
+    <div class="recap">
+      <h3>Récapitulatif</h3>
+      <div class="recap-item" *ngFor="let item of items">
+        <span>{{ item.produit.titre }} × {{ item.quantite }}</span>
+        <span>{{ (item.produit.prix * item.quantite) | number }} FCFA</span>
+      </div>
+      <div class="recap-total">
+        <strong>Total : {{ total | number }} FCFA</strong>
+      </div>
+    </div>
+
+    <div class="livraison-section">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="avecLivraison" />
+        Je souhaite une livraison
+      </label>
+
+      <div *ngIf="avecLivraison" class="adresse-field">
+        <label>Adresse de livraison</label>
+        <textarea [(ngModel)]="adresseLivraison" rows="2" placeholder="Ville, quartier, points de repère..."></textarea>
+      </div>
+    </div>
+
+    <div class="notes-section">
+      <label>Notes pour le vendeur (optionnel)</label>
+      <textarea [(ngModel)]="notes" rows="2" placeholder="Instructions particulières..."></textarea>
+    </div>
+
+    <button class="btn-confirmer" (click)="confirmer()" [disabled]="enCours || (avecLivraison && !adresseLivraison)">
+      {{ enCours ? 'Traitement en cours...' : 'Confirmer la commande' }}
+    </button>
+  </div>
+
+  <ng-template #emptyCart>
+    <div class="empty">Votre panier est vide.</div>
+  </ng-template>
+</div>

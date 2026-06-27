@@ -1,0 +1,38 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h2>Mes annonces</h2>
+    <a routerLink="/produits/ajouter" class="btn-add">+ Nouveau produit</a>
+  </div>
+
+  <div *ngIf="produits.length; else empty">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Prix</th>
+          <th>Stock</th>
+          <th>Catégorie</th>
+          <th>Publié le</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of produits">
+          <td><a [routerLink]="'/produits/' + p.id" class="link">{{ p.titre }}</a></td>
+          <td>{{ p.prix | number }} FCFA</td>
+          <td>{{ p.quantiteDisponible }} {{ p.uniteVente }}</td>
+          <td>{{ p.categorie }}</td>
+          <td>{{ p.datePublication | date:'dd/MM/yyyy' }}</td>
+          <td class="actions-cell">
+            <a [routerLink]="'/produits/editer/' + p.id" class="btn-sm">✏️</a>
+            <button (click)="supprimer(p.id)" class="btn-sm btn-danger">🗑️</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #empty>
+    <div class="empty">Vous n'avez pas encore d'annonces.</div>
+  </ng-template>
+</div>
