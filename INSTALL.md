@@ -22,7 +22,7 @@ JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 mvn spring-boot:run -Dspring-boot.r
 # 2. Frontend (autre terminal)
 cd frontend
 npm install
-ng serve
+npx ng serve --poll=2000
 
 # 3. Ouvrir http://localhost:4200
 ```
@@ -52,7 +52,7 @@ JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 mvn spring-boot:run
 # Frontend
 cd frontend
 npm install
-ng serve --open
+npx ng serve --poll=2000 --open
 ```
 
 ### Windows
@@ -76,7 +76,7 @@ mvn spring-boot:run
 # Frontend
 cd frontend
 npm install
-ng serve --open
+npx ng serve --poll=2000 --open
 ```
 
 ### macOS
@@ -97,7 +97,7 @@ JAVA_HOME=/usr/local/opt/openjdk@21 mvn spring-boot:run
 # Frontend
 cd frontend
 npm install
-ng serve --open
+npx ng serve --poll=2000 --open
 ```
 
 ### Docker (PostgreSQL uniquement)

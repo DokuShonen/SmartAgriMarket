@@ -38,7 +38,7 @@ JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 mvn spring-boot:run -Dspring-boot.r
 # Frontend (autre terminal)
 cd frontend
 npm install
-ng serve
+npx ng serve --poll=2000
 ```
 
 Ouvrir http://localhost:4200 puis cliquer **Connexion**.
