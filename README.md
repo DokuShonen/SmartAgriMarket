@@ -143,7 +143,7 @@ migration vers une base gratuite permanente (Neon) : voir [INSTALL.md](INSTALL.m
 
 ## Diagrammes UML
 
-Les diagrammes de conception sont dans le dossier [`diagrammes/`](diagrammes/) :
+Les diagrammes de conception sont dans le dossier [`docs/diagrammes/`](docs/diagrammes/) :
 - `01-use-case.md` — Cas d'utilisation
 - `02-classes.md` — Diagramme de classes
 - `03-sequence-commande.md` — Séquence commande
