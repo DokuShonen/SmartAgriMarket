@@ -65,6 +65,7 @@ Ouvrir http://localhost:4200 puis cliquer **Connexion**.
 docker compose build
 
 # Démarrer la stack (web :80, API :8080, PostgreSQL :5432)
+# Ports pris ? printf 'DB_PORT=5434\nHTTP_PORT=8082\n' > .env
 docker compose up -d
 
 # État et logs

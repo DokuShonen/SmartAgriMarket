@@ -80,11 +80,24 @@ frontend/src/app/
   `hero-farm2.jpg`, `hero-agriculture.jpg`, `leaf.png`, et les 7 `assets/materiel-*.jpg`
   (doublons de `backend/uploads/`, 0 référence dans le code)
 
-## Docker
-- `nginx.conf` : location `/uploads/` proxygé vers backend (ajouté le 13/10)
-- `Dockerfile.backend` : `COPY backend/uploads ./uploads` (seed d'images dans le volume nommé)
-- `Dockerfile.frontend` : chemin de sortie corrigé → `dist/smartagrimarket-frontend/browser`
-- `.dockerignore` ajouté (node_modules, dist, target, .angular)
+## Docker (testé et fonctionnel le 13/10/2026)
+- `nginx.conf` : locations `/api/` **et `/uploads/`` proxygés vers `backend:8080`
+- `Dockerfile.backend` : `COPY backend/uploads ./uploads` + dépôt Maven local injecté
+  via `build.additional_contexts.m2` → `mvn -o package` (Central inaccessible des conteneurs,
+  débit ~5-30 kB/s) ; `MAVEN_OPTS=-Djava.net.preferIPv4Stack=true`
+- `Dockerfile.frontend` : chemin de sortie corrigé (`smartagrimarket-frontend/browser`),
+  `.npmrc` copié (`legacy-peer-deps`), `NODE_OPTIONS=--dns-result-order=ipv4first`
+- `angular.json` : `optimization.fonts.inline: false` (build prod sans Google Fonts)
+- `docker-compose.yml` : `${DB_PORT:-5432}` et `${HTTP_PORT:-80}` (ports de la machine),
+  plus de `network: host` (le DNS des conteneurs de build fonctionne)
+- `.env` (gitignoré) : `DB_PORT=5434`, `HTTP_PORT=8082` — ports déjà pris en local
+- `.dockerignore` : node_modules, dist, target, .angular
+- Stack vérifiée : db healthy, backend `/api/health` OK, seed PostgreSQL OK,
+  nginx sert l'app + proxy `/api` et `/uploads` (200)
+
+## URLs
+- Dev : frontend `http://localhost:4200` (ng serve --poll=2000) → API `localhost:8080`
+- Docker : `http://localhost:8082` (nginx) → API `localhost:8080` → pg `localhost:5434`
 
 ## Bloqueurs connus
 - PostgreSQL local : impossible de se connecter (pas de sudo pour modifier pg_hba.conf)

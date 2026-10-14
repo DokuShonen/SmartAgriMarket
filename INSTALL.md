@@ -119,11 +119,19 @@ curl http://localhost:8080/api/health
 curl http://localhost/api/categories
 ```
 
-| Service | Port | Rôle |
+| Service | Port hôte (défaut) | Rôle |
 |---------|------|------|
-| `frontend` (nginx) | **80** | Application Angular + proxy `/api/` et `/uploads/` |
+| `frontend` (nginx) | **80** (`HTTP_PORT`) | Application Angular + proxy `/api/` et `/uploads/` |
 | `backend` (Spring Boot, profil `prod`) | **8080** | API REST, JWT, WebSocket |
-| `db` (PostgreSQL 16) | **5432** | Base de données |
+| `db` (PostgreSQL 16) | **5432** (`DB_PORT`) | Base de données |
+
+Si un port est déjà pris sur la machine, surchargez-le via le fichier `.env` (non versionné) :
+
+```bash
+printf 'DB_PORT=5434\nHTTP_PORT=8082\n' > .env
+docker compose up -d
+# → frontend sur http://localhost:8082, PostgreSQL sur 5434
+```
 
 Commandes utiles :
 
@@ -139,7 +147,12 @@ Détails d'implémentation :
 
 - `Dockerfile.backend` : build Maven multi-stage, copie `backend/uploads/` dans l'image
   (Docker initialise le volume nommé `uploads` avec ces fichiers au premier lancement).
-- `Dockerfile.frontend` : build Angular (`ng build --configuration production`) puis nginx.
+  Le dépôt Maven local de l'hôte est injecté via `build.additional_contexts.m2`
+  (~/.m2/repository) pour construire **hors-ligne** : les conteneurs de build n'accèdent
+  presque jamais correctement à Maven Central (débit ~5-30 kB/s, DNS IPv6).
+- `Dockerfile.frontend` : `npm ci` puis build Angular (`ng build --configuration production`)
+  puis nginx. L'inlining des Google Fonts est désactivé (`angular.json` →
+  `optimization.fonts.inline: false`) : il échouait sans accès à fonts.googleapis.com.
 - `nginx.conf` : `location /api/` et `location /uploads/` sont proxygés vers `backend:8080`
   — indispensable, sinon les photos de matériel renvoient 404.
 - `.dockerignore` : exclut `node_modules`, `dist`, `target`, `.angular`.
@@ -311,7 +324,16 @@ npx ng serve --poll=2000
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-**Build frontend échoue (fonts)** → Erreur réseau pour Google Fonts, le build fonctionne quand même. Si besoin, supprimez l'import `@import url(...)` dans `styles.css`.
+**Build frontend échoue (fonts)** → L'inlining des Google Fonts est désactivé en production
+(`angular.json`), le build ne dépend donc plus de fonts.googleapis.com. En dev, une erreur
+réseau Google Fonts n'empêche pas le fonctionnement.
+
+**`docker compose build` échoue sur Maven Central** → le build backend utilise le dépôt local
+(`additional_contexts.m2`). Vérifiez que `~/.m2/repository` est complet :
+```bash
+mvn -o -DskipTests package     # test hors-ligne sur l'hôte
+docker compose build --no-cache backend
+```
 
 **`npm ci` / `npm install` échoue avec `ERESOLVE` (ng2-charts)** :
 `legacy-peer-deps=true` est défini dans `frontend/.npmrc` — conservez ce fichier (il est copié

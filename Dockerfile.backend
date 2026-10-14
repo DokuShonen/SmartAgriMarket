@@ -1,10 +1,13 @@
+# syntax=docker/dockerfile:1
+# Le dépôt Maven local de l'hôte est fourni par compose (build.additional_contexts.m2)
+# afin de construire hors-ligne : Central est parfois injoignable/lent depuis les conteneurs.
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 ENV MAVEN_OPTS="-Djava.net.preferIPv4Stack=true"
 COPY backend/pom.xml .
-RUN mvn dependency:go-offline -B
+COPY --from=m2 / /root/.m2/repository/
 COPY backend/src ./src
-RUN mvn package -DskipTests -B
+RUN mvn -o package -DskipTests -B || mvn package -DskipTests -B
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
