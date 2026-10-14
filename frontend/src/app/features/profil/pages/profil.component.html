@@ -1,54 +1,317 @@
-<div class="profil-container">
-  <h2>Mon profil</h2>
-
-  <div class="quick-links">
-    <a routerLink="/produits/dashboard">Mes produits</a>
-    <a routerLink="/materiel">Mes annonces matériel</a>
-    <a routerLink="/logistique">Mes livraisons</a>
-  </div>
-
-  <div class="tabs">
-    <button [class.active]="onglet === 'commandes'" (click)="onglet = 'commandes'">Mes commandes</button>
-    <button [class.active]="onglet === 'parametres'" (click)="onglet = 'parametres'">Paramètres</button>
-  </div>
-
-  <!-- Commandes -->
-  <ng-container *ngIf="onglet === 'commandes'">
-    <div *ngIf="commandes.length; else emptyCmd">
-      <div *ngFor="let c of commandes" class="card">
-        <h3>Commande #{{ c.id | slice:0:8 }}</h3>
-        <p class="meta">{{ c.dateCreation | date:'dd/MM/yyyy HH:mm' }}</p>
-        <p *ngFor="let l of c.lignes">{{ l.produitTitre }} x{{ l.quantite }} — {{ l.prixUnitaire * l.quantite | number }} FCFA</p>
-        <p><strong>Total : {{ c.montantTotal | number }} FCFA</strong></p>
-        <span class="badge" [class]="statutClass(c.statut)">{{ c.statut }}</span>
+<div class="profile-page">
+  <!-- STICKY HEADER -->
+  <div class="profile-header">
+    <label class="profile-avatar-wrap" (click)="triggerPhotoUpload()">
+      <div class="profile-avatar" [class.has-photo]="!!auth.utilisateur()?.photoProfil">
+        <img *ngIf="auth.utilisateur()?.photoProfil && !photoEnCours" [src]="auth.utilisateur()!.photoProfil" (error)="auth.utilisateur()!.photoProfil = undefined; photoErreur = true" class="avatar-img" />
+        <span class="avatar-initial" *ngIf="(!auth.utilisateur()?.photoProfil || photoErreur) && !photoEnCours">{{ (auth.utilisateur()?.prenom || '?').charAt(0).toUpperCase() }}</span>
+        <span class="material-icons-outlined spin" *ngIf="photoEnCours">hourglass_top</span>
+      </div>
+      <div class="avatar-edit" *ngIf="!photoEnCours">
+        <span class="material-icons-outlined">camera_alt</span>
+      </div>
+    </label>
+    <input #photoInput type="file" accept="image/jpeg,image/png,image/webp" (change)="onPhotoSelected($event)" style="display:none" />
+    <div class="profile-info">
+      <h1>{{ auth.utilisateur()?.prenom }} {{ auth.utilisateur()?.nom }}</h1>
+      <p class="profile-role">{{ getRoleLabel() }}</p>
+      <div class="profile-badges" *ngIf="badges.length && !estTypeAdmin">
+        <span class="profile-badge-item" *ngFor="let b of badges" [style.background]="badgeStatutColor(b.statut)" [style.color]="badgeStatutTextColor(b.statut)">
+          {{ b.type }} - {{ badgeStatutLabel(b.statut) }}
+        </span>
       </div>
     </div>
-    <ng-template #emptyCmd><div class="empty">Aucune commande pour le moment.</div></ng-template>
-  </ng-container>
+  </div>
 
-  <!-- Paramètres -->
-  <ng-container *ngIf="onglet === 'parametres'">
-    <div class="card">
-      <p class="msg" *ngIf="message">{{ message }}</p>
-      <div class="form-group">
-        <label>Prénom</label>
-        <input type="text" [(ngModel)]="editPrenom" />
-      </div>
-      <div class="form-group">
-        <label>Nom</label>
-        <input type="text" [(ngModel)]="editNom" />
-      </div>
-      <div class="form-group">
-        <label>Téléphone</label>
-        <input type="tel" [(ngModel)]="editTelephone" />
-      </div>
-      <div class="form-group">
-        <label>Localité</label>
-        <input type="text" [(ngModel)]="editLocalite" />
-      </div>
-      <button class="btn-submit" (click)="sauvegarder()" [disabled]="enCours">
-        {{ enCours ? 'Enregistrement...' : 'Enregistrer' }}
+  @if (estTypeAdmin) {
+    <!-- ADMIN DESKTOP SIDEBAR -->
+    <aside class="profile-sidebar desktop-only">
+      <button class="sidebar-item active">
+        <span class="material-icons-outlined">person</span> Profil
       </button>
+      <div class="sidebar-divider"></div>
+      <button class="sidebar-item" (click)="deconnexion()">
+        <span class="material-icons-outlined">logout</span> Se deconnecter
+      </button>
+    </aside>
+
+    <!-- ADMIN : juste le formulaire -->
+    <div class="profile-main">
+      <div class="content-area">
+        <div class="tab-content">
+          <div class="settings-section">
+            <h3 class="settings-title">
+              <span class="material-icons-outlined">person</span> Informations personnelles
+            </h3>
+            @if (message) { <p class="success-msg">{{ message }}</p> }
+            <div class="form-row">
+              <div class="form-field">
+                <label>Prenom</label>
+                <input type="text" [(ngModel)]="editPrenom" />
+              </div>
+              <div class="form-field">
+                <label>Nom</label>
+                <input type="text" [(ngModel)]="editNom" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>Telephone</label>
+                <input type="tel" [(ngModel)]="editTelephone" />
+              </div>
+              <div class="form-field">
+                <label>Localite</label>
+                <input type="text" [(ngModel)]="editLocalite" />
+              </div>
+            </div>
+            <button class="btn-save" (click)="sauvegarder()" [disabled]="enCours">
+              <span class="material-icons-outlined" *ngIf="!enCours">save</span>
+              {{ enCours ? 'Enregistrement...' : 'Enregistrer' }}
+            </button>
+          </div>
+          <button class="btn-logout" (click)="deconnexion()">
+            <span class="material-icons-outlined">logout</span> Se deconnecter
+          </button>
+        </div>
+      </div>
     </div>
-  </ng-container>
+
+    <!-- BOTTOM NAV (admin only: profil + deconnexion) — mobile only -->
+    <nav class="bottom-nav">
+      <button class="bottom-nav-item active">
+        <span class="material-icons-outlined">person</span>
+        <span>Profil</span>
+      </button>
+      <button class="bottom-nav-item" (click)="deconnexion()">
+        <span class="material-icons-outlined">logout</span>
+        <span>Quitter</span>
+      </button>
+    </nav>
+  } @else {
+    <!-- DESKTOP SIDEBAR -->
+    <aside class="profile-sidebar desktop-only">
+      <button class="sidebar-item" [class.active]="onglet === 'commandes'" (click)="ongletChange('commandes')">
+        <span class="material-icons-outlined">receipt_long</span> Commandes
+      </button>
+      <button class="sidebar-item" [class.active]="onglet === 'notifications'" (click)="ongletChange('notifications')">
+        <span class="material-icons-outlined">notifications</span> Notifications
+        @if (nonLuesCount > 0) { <span class="sidebar-badge">{{ nonLuesCount }}</span> }
+      </button>
+      @if (isProducteur) {
+        <button class="sidebar-item" [class.active]="onglet === 'evaluations'" (click)="ongletChange('evaluations')">
+          <span class="material-icons-outlined">star</span> Avis
+        </button>
+      }
+      <div class="sidebar-divider"></div>
+      <button class="sidebar-item" [class.active]="onglet === 'parametres'" (click)="ongletChange('parametres')">
+        <span class="material-icons-outlined">settings</span> Reglages
+      </button>
+      <button class="sidebar-item" (click)="deconnexion()">
+        <span class="material-icons-outlined">logout</span> Se deconnecter
+      </button>
+    </aside>
+
+    <!-- QUICK ACTIONS (mobile only) -->
+    <div class="quick-actions mobile-only" *ngIf="isProducteur">
+      <a routerLink="/produits/dashboard" class="action-pill">
+        <span class="material-icons-outlined">storefront</span> Mes produits
+      </a>
+      <a routerLink="/produits/ventes" class="action-pill">
+        <span class="material-icons-outlined">point_of_sale</span> Ventes
+      </a>
+      <a routerLink="/produits/historique" class="action-pill">
+        <span class="material-icons-outlined">receipt_long</span> Commandes
+      </a>
+    </div>
+    <div class="quick-actions mobile-only" *ngIf="!isProducteur">
+      <a routerLink="/produits/historique" class="action-pill">
+        <span class="material-icons-outlined">receipt_long</span> Mes commandes
+      </a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="profile-main">
+      <div class="content-area">
+        @if (onglet === 'commandes') {
+          <div class="tab-content">
+            @if (commandes.length) {
+              <div class="order-list">
+                @for (c of commandes; track c.id) {
+                  <a class="order-card" routerLink="/produits/historique">
+                    <div class="order-top">
+                      <span class="order-id">#{{ c.id | slice:0:8 }}</span>
+                      <span class="badge" [class]="statutClass(c.statut)">{{ statutLabel(c.statut) }}</span>
+                    </div>
+                    <div class="order-items">
+                      @for (l of c.lignes; track l) {
+                        {{ l.produitTitre }} x{{ l.quantite }}@if (!$last) { . }
+                      }
+                    </div>
+                    <div class="order-bottom">
+                      <strong>{{ c.montantTotal | number }} FCFA</strong>
+                      <span class="order-date">{{ c.dateCreation | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                  </a>
+                }
+              </div>
+            } @else {
+              <div class="empty-state">
+                <span class="material-icons-outlined">receipt_long</span>
+                <h3>Aucune commande</h3>
+                <p>Passez votre premiere commande</p>
+              </div>
+            }
+          </div>
+        }
+
+        @if (onglet === 'notifications') {
+          <div class="tab-content">
+            @if (notifications.length) {
+              @if (nonLuesCount > 0) {
+                <div class="notif-toolbar">
+                  <button class="toolbar-btn" (click)="marquerToutLu()">
+                    <span class="material-icons-outlined">done_all</span> Tout lire
+                  </button>
+                </div>
+              }
+              <div class="notif-list">
+                @for (n of notifications; track n.id) {
+                  <div class="notif-item" [class.unread]="!n.estLue" (click)="marquerLue(n)">
+                    <div class="notif-icon-wrap">
+                      <span class="material-icons-outlined">{{ getNotifIcon(n.type) }}</span>
+                    </div>
+                    <div class="notif-body">
+                      <span class="notif-title">{{ n.titre }}</span>
+                      <p class="notif-text">{{ n.contenu }}</p>
+                      <span class="notif-date">{{ n.dateCreation | date:'dd/MM HH:mm' }}</span>
+                    </div>
+                    @if (!n.estLue) { <span class="unread-dot"></span> }
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-state">
+                <span class="material-icons-outlined">notifications_none</span>
+                <h3>Aucune notification</h3>
+                <p>Vous etes a jour</p>
+              </div>
+            }
+          </div>
+        }
+
+        @if (onglet === 'evaluations') {
+          <div class="tab-content">
+            @if (evaluations.length) {
+              <div class="rating-summary">
+                <span class="rating-big">{{ evalMoyenne | number:'1.1-1' }}</span>
+                <div class="rating-stars">
+                  @for (s of [1,2,3,4,5]; track s) {
+                    <span class="material-icons-outlined" [class.filled]="s <= evalMoyenne">star</span>
+                  }
+                </div>
+                <span class="rating-count">{{ evaluations.length }} avis</span>
+              </div>
+              @for (e of evaluations; track e.id) {
+                <div class="review-card">
+                  <div class="review-top">
+                    <div class="review-stars">
+                      @for (s of [1,2,3,4,5]; track s) {
+                        <span class="material-icons-outlined" [class.filled]="s <= e.note">star</span>
+                      }
+                    </div>
+                    <span class="review-date">{{ e.dateCreation | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                  @if (e.commentaire) { <p class="review-text">{{ e.commentaire }}</p> }
+                </div>
+              }
+            } @else {
+              <div class="empty-state">
+                <span class="material-icons-outlined">star_outline</span>
+                <h3>Aucun avis</h3>
+                <p>Les evaluations de vos clients apparaitront ici</p>
+              </div>
+            }
+          </div>
+        }
+
+        @if (onglet === 'parametres') {
+          <div class="tab-content">
+            <div class="settings-section">
+              <h3 class="settings-title">
+                <span class="material-icons-outlined">person</span> Informations personnelles
+              </h3>
+              @if (message) { <p class="success-msg">{{ message }}</p> }
+              <div class="form-row">
+                <div class="form-field">
+                  <label>Prenom</label>
+                  <input type="text" [(ngModel)]="editPrenom" />
+                </div>
+                <div class="form-field">
+                  <label>Nom</label>
+                  <input type="text" [(ngModel)]="editNom" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label>Telephone</label>
+                  <input type="tel" [(ngModel)]="editTelephone" />
+                </div>
+                <div class="form-field">
+                  <label>Localite</label>
+                  <input type="text" [(ngModel)]="editLocalite" />
+                </div>
+              </div>
+              <button class="btn-save" (click)="sauvegarder()" [disabled]="enCours">
+                <span class="material-icons-outlined" *ngIf="!enCours">save</span>
+                {{ enCours ? 'Enregistrement...' : 'Enregistrer' }}
+              </button>
+            </div>
+
+            <div class="settings-section">
+              <h3 class="settings-title">
+                <span class="material-icons-outlined">badge</span> Pseudo forum
+              </h3>
+              <p class="settings-hint">Ce pseudo sera affiche dans le forum.</p>
+              @if (pseudoMessage) { <p class="success-msg">{{ pseudoMessage }}</p> }
+              <div class="form-field">
+                <label>Pseudo</label>
+                <input type="text" [(ngModel)]="editPseudo" placeholder="Votre pseudo forum" />
+              </div>
+              <button class="btn-save" (click)="sauvegarderPseudo()" [disabled]="pseudoEnCours">
+                <span class="material-icons-outlined" *ngIf="!pseudoEnCours">save</span>
+                {{ pseudoEnCours ? 'Enregistrement...' : 'Modifier le pseudo' }}
+              </button>
+            </div>
+
+            <button class="btn-logout" (click)="deconnexion()">
+              <span class="material-icons-outlined">logout</span> Se deconnecter
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- BOTTOM NAV — mobile only -->
+    <nav class="bottom-nav">
+      <button class="bottom-nav-item" [class.active]="onglet === 'commandes'" (click)="ongletChange('commandes')">
+        <span class="material-icons-outlined">receipt_long</span>
+        <span>Commandes</span>
+      </button>
+      <button class="bottom-nav-item" [class.active]="onglet === 'notifications'" (click)="ongletChange('notifications')">
+        <span class="material-icons-outlined">notifications</span>
+        <span>Notifs</span>
+        @if (nonLuesCount > 0) { <span class="bottom-nav-badge">{{ nonLuesCount }}</span> }
+      </button>
+      @if (isProducteur) {
+        <button class="bottom-nav-item" [class.active]="onglet === 'evaluations'" (click)="ongletChange('evaluations')">
+          <span class="material-icons-outlined">star</span>
+          <span>Avis</span>
+        </button>
+      }
+      <button class="bottom-nav-item" [class.active]="onglet === 'parametres'" (click)="ongletChange('parametres')">
+        <span class="material-icons-outlined">settings</span>
+        <span>Reglages</span>
+      </button>
+    </nav>
+  }
 </div>

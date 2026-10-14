@@ -1,50 +1,92 @@
-<div class="forum-container">
+<div class="forum-page">
+  <!-- HEADER -->
   <div class="forum-header">
-    <div class="tabs">
-      <button [class.active]="onglet === 'forum'" (click)="onglet = 'forum'">Forum</button>
-      <button [class.active]="onglet === 'apprentissage'" (click)="onglet = 'apprentissage'">Apprentissage</button>
-    </div>
-    <a routerLink="/forum/ajouter" class="btn-add" *ngIf="onglet === 'forum'">
-      + Nouvel article
-    </a>
+    <h1>Forum</h1>
   </div>
 
-  <!-- Forum -->
-  <ng-container *ngIf="onglet === 'forum'">
-    <div class="filter-bar" *ngIf="categories.length">
-      <select [(ngModel)]="filtreCategorie">
-        <option value="">Toutes les catégories</option>
-        <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
-      </select>
+  <!-- TABS -->
+  <div class="tabs" role="tablist" aria-label="Sections du forum">
+    <button role="tab" [attr.aria-selected]="onglet === 'forum'" [class.active]="onglet === 'forum'" (click)="onglet = 'forum'">
+      <span class="material-icons-outlined" aria-hidden="true">forum</span>
+      <span>Discussions</span>
+    </button>
+    <button role="tab" [attr.aria-selected]="onglet === 'apprentissage'" [class.active]="onglet === 'apprentissage'" (click)="onglet = 'apprentissage'">
+      <span class="material-icons-outlined" aria-hidden="true">school</span>
+      <span>Apprentissage</span>
+    </button>
+  </div>
+
+  <!-- LOADING -->
+  <app-loading *ngIf="chargement || erreur" [erreur]="erreur" (retry)="charger()"></app-loading>
+
+  <!-- FORUM TAB -->
+  <ng-container *ngIf="onglet === 'forum' && !chargement && !erreur">
+    <!-- SEARCH -->
+    <div class="search-bar">
+      <span class="material-icons-outlined">search</span>
+      <input type="text" [(ngModel)]="recherche" (input)="chercher()" placeholder="Rechercher..." />
+      <button *ngIf="recherche" class="search-clear" (click)="recherche = ''; chercher()" aria-label="Effacer la recherche">
+        <span class="material-icons-outlined">close</span>
+      </button>
     </div>
 
-    <div *ngIf="articlesFiltres.length; else empty">
-      <a *ngFor="let a of articlesFiltres" [routerLink]="'/forum/' + a.id" class="card">
-        <div class="card-body">
-          <h3>{{ a.titre }}</h3>
-          <p class="categ">{{ a.categorie }}</p>
-          <p class="preview">{{ a.contenu | slice:0:120 }}...</p>
-          <p class="meta">{{ a.auteurNom }} — {{ a.datePublication | date:'dd/MM/yyyy' }}</p>
+    <!-- POSTS -->
+    <div *ngIf="articles.length; else empty" class="post-list">
+      <a *ngFor="let a of articles" [routerLink]="'/forum/' + a.id" class="post-card stagger-item">
+        <div class="post-avatar">{{ getPseudo(a.auteur).charAt(0).toUpperCase() }}</div>
+        <div class="post-body">
+          <div class="post-meta">
+            <span class="post-author">{{ getPseudo(a.auteur) }}</span>
+            <span class="post-date">{{ a.datePublication | date:'dd/MM HH:mm' }}</span>
+          </div>
+          <h3 class="post-title">{{ a.titre }}</h3>
+          <p class="post-preview">{{ a.contenu | slice:0:150 }}</p>
+          <div class="post-tags">
+            <span class="tag" *ngIf="a.categorie">{{ a.categorie }}</span>
+            <span class="tag verified" *ngIf="a.estModere">
+              <span class="material-icons-outlined">verified</span> Modéré
+            </span>
+          </div>
         </div>
       </a>
     </div>
   </ng-container>
 
-  <!-- Apprentissage -->
-  <ng-container *ngIf="onglet === 'apprentissage'">
-    <div *ngIf="apprentissages.length; else empty">
-      <div *ngFor="let c of apprentissages" class="card apprentissage">
-        <div class="card-body">
-          <h3>{{ c.titre }}</h3>
-          <p class="categ">{{ c.typeContenu }}</p>
-          <p class="preview">{{ c.contenu | slice:0:150 }}...</p>
-          <p class="meta" *ngIf="c.estValide">✅ Contenu validé</p>
+  <!-- APPRENTISSAGE TAB -->
+  <ng-container *ngIf="onglet === 'apprentissage' && !chargement && !erreur">
+    <div *ngIf="apprentissages.length; else empty" class="learn-list">
+      <a *ngFor="let c of apprentissages" [routerLink]="'/forum/apprentissage/' + c.id" class="learn-card stagger-item">
+        <div class="learn-icon">
+          <span class="material-icons-outlined">{{ c.typeContenu === 'VIDEO' ? 'play_circle' : c.typeContenu === 'GUIDE' ? 'menu_book' : 'article' }}</span>
         </div>
-      </div>
+        <div class="learn-body">
+          <span class="learn-type">{{ c.typeContenu }}</span>
+          <h3>{{ c.titre }}</h3>
+          <p class="learn-preview">{{ c.contenu | slice:0:120 }}...</p>
+          <span class="learn-validated" *ngIf="c.estValide">
+            <span class="material-icons-outlined">check_circle</span> Validé
+          </span>
+        </div>
+      </a>
     </div>
   </ng-container>
 
+  <!-- EMPTY -->
   <ng-template #empty>
-    <div class="empty">Aucun contenu pour le moment.</div>
+    <div class="empty-state">
+      <span class="material-icons-outlined">forum</span>
+      <h3>Aucun contenu</h3>
+      <p>Soyez le premier à publier !</p>
+    </div>
   </ng-template>
 </div>
+
+<!-- FAB -->
+<button class="fab" (click)="showForm = true" *ngIf="onglet === 'forum' && !chargement" aria-label="Nouveau message">
+  <span class="material-icons-outlined">edit</span>
+</button>
+
+<!-- MODAL -->
+<app-modal [open]="showForm" titre="Nouveau message" (closed)="showForm = false; charger()">
+  <app-forum-form (saved)="showForm = false; charger()" (cancelled)="showForm = false"></app-forum-form>
+</app-modal>

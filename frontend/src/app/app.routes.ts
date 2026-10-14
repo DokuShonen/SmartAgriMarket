@@ -12,9 +12,10 @@ export const routes: Routes = [
       { path: 'materiel', loadChildren: () => import('./features/materiel/materiel.routes').then(m => m.routes) },
       { path: 'messagerie', loadChildren: () => import('./features/messagerie/messagerie.routes').then(m => m.routes), canActivate: [authGuard] },
       { path: 'forum', loadChildren: () => import('./features/forum/forum.routes').then(m => m.routes) },
-      { path: 'logistique', loadChildren: () => import('./features/logistique/logistique.routes').then(m => m.routes), canActivate: [authGuard] },
+      { path: 'agent-relais', loadChildren: () => import('./features/agent-relais/agent-relais.routes').then(m => m.routes), canActivate: [authGuard] },
       { path: 'connexion', loadComponent: () => import('./features/auth/pages/login.component').then(m => m.LoginComponent) },
       { path: 'inscription', loadComponent: () => import('./features/auth/pages/register.component').then(m => m.RegisterComponent) },
+      { path: 'mot-de-passe-oublie', loadComponent: () => import('./features/auth/pages/forgot-password.component').then(m => m.ForgotPasswordComponent) },
       { path: 'profil', loadComponent: () => import('./features/profil/pages/profil.component').then(m => m.ProfilComponent), canActivate: [authGuard] },
       { path: 'admin', loadComponent: () => import('./features/admin/pages/admin-panel.component').then(m => m.AdminPanelComponent), canActivate: [authGuard, adminGuard] },
     ]

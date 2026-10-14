@@ -1,64 +1,673 @@
-<div class="admin-container">
-  <h2>Administration</h2>
-  <p class="sub">Modération du contenu et gestion des utilisateurs</p>
+<div class="admin-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>Administration</h1>
+      <p>Gestion et moderation</p>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section" *ngIf="estAdmin || estAdminTechnique">
+        <div class="sidebar-section-label">Analyse</div>
+        <button class="sidebar-item" [class.active]="onglet === 'stats'" (click)="onglet = 'stats'; searchQuery = ''">
+          <span class="material-icons-outlined">bar_chart</span> Statistiques
+        </button>
+      </div>
 
-  <div class="tabs">
-    <button [class.active]="onglet === 'forum'" (click)="onglet = 'forum'">Articles forum</button>
-    <button [class.active]="onglet === 'apprentissage'" (click)="onglet = 'apprentissage'">Contenus apprentissage</button>
-    <button [class.active]="onglet === 'utilisateurs'" (click)="onglet = 'utilisateurs'">Utilisateurs</button>
-  </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Moderation</div>
+        <button class="sidebar-item" [class.active]="onglet === 'forum'" (click)="onglet = 'forum'; searchQuery = ''" *ngIf="estAdmin || estModerationSupport">
+          <span class="material-icons-outlined">article</span> Forum
+        </button>
+        <button class="sidebar-item" [class.active]="onglet === 'apprentissage'" (click)="onglet = 'apprentissage'; searchQuery = ''" *ngIf="estAdmin || estModerationSupport">
+          <span class="material-icons-outlined">school</span> Apprentissage
+        </button>
+        <button class="sidebar-item" [class.active]="onglet === 'signalements'" (click)="onglet = 'signalements'; searchQuery = ''" *ngIf="estModerationSupport">
+          <span class="material-icons-outlined">flag</span> Signalements
+          <span class="item-badge" *ngIf="unreadSignalements > 0">{{ unreadSignalements }}</span>
+        </button>
+        <button class="sidebar-item" [class.active]="onglet === 'badges'" (click)="onglet = 'badges'; searchQuery = ''" *ngIf="estAdmin || estModerationSupport">
+          <span class="material-icons-outlined">workspace_premium</span> Badges
+          <span class="item-badge" *ngIf="pendingBadges > 0">{{ pendingBadges }}</span>
+        </button>
+      </div>
 
-  <!-- Forum -->
-  <ng-container *ngIf="onglet === 'forum'">
-    <div *ngIf="articles.length; else empty">
-      <div *ngFor="let a of articles" class="card">
-        <h3>{{ a.titre }}</h3>
-        <p class="meta">{{ a.categorie }} — {{ a.auteurNom }} — {{ a.datePublication | date:'dd/MM/yyyy' }}</p>
-        <span class="badge" [class.ok]="a.estModere" [class.non]="!a.estModere">
-          {{ a.estModere ? 'Approuvé' : 'En attente' }}
-        </span>
-        <div class="actions">
-          <button class="btn btn-approve" *ngIf="!a.estModere" (click)="moderer(a.id, true)">Approuver</button>
-          <button class="btn btn-reject" *ngIf="a.estModere" (click)="moderer(a.id, false)">Désapprouver</button>
-        </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Gestion</div>
+        <button class="sidebar-item" [class.active]="onglet === 'utilisateurs'" (click)="onglet = 'utilisateurs'; searchQuery = ''" *ngIf="estAdmin || estModerationSupport">
+          <span class="material-icons-outlined">people</span> Utilisateurs
+        </button>
+        <button class="sidebar-item" [class.active]="onglet === 'vedettes'" (click)="onglet = 'vedettes'; searchQuery = ''" *ngIf="estAdmin">
+          <span class="material-icons-outlined">star</span> Produits vedettes
+        </button>
+        <button class="sidebar-item" [class.active]="onglet === 'cours'" (click)="onglet = 'cours'; searchQuery = ''" *ngIf="estAdmin">
+          <span class="material-icons-outlined">trending_up</span> Cours semences
+        </button>
+        <button class="sidebar-item" [class.active]="onglet === 'messages'" (click)="onglet = 'messages'; searchQuery = ''" *ngIf="estModerationSupport">
+          <span class="material-icons-outlined">chat</span> Messages
+        </button>
+      </div>
+
+      <div class="sidebar-section" *ngIf="estAdmin">
+        <div class="sidebar-section-label">Configuration</div>
+        <button class="sidebar-item" [class.active]="onglet === 'parametres'" (click)="onglet = 'parametres'; searchQuery = ''">
+          <span class="material-icons-outlined">settings</span> Parametres
+        </button>
+      </div>
+    </nav>
+    <div class="sidebar-footer">SmartAgriMarket &copy; 2026</div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <!-- HEADER -->
+    <div class="content-header">
+      <div>
+        <h2>{{ onglet === 'stats' ? 'Tableau de bord' : onglet === 'forum' ? 'Forum' : onglet === 'apprentissage' ? 'Apprentissage' : onglet === 'utilisateurs' ? 'Utilisateurs' : onglet === 'vedettes' ? 'Produits vedettes' : onglet === 'cours' ? 'Cours semences' : onglet === 'messages' ? 'Messages' : onglet === 'signalements' ? 'Signalements' : onglet === 'badges' ? 'Badges' : 'Parametres' }}</h2>
       </div>
     </div>
-  </ng-container>
 
-  <!-- Apprentissage -->
-  <ng-container *ngIf="onglet === 'apprentissage'">
-    <div *ngIf="apprentissages.length; else empty">
-      <div *ngFor="let c of apprentissages" class="card">
-        <h3>{{ c.titre }}</h3>
-        <p class="meta">{{ c.typeContenu }}</p>
-        <span class="badge" [class.ok]="c.estValide" [class.non]="!c.estValide">
-          {{ c.estValide ? 'Validé' : 'En attente' }}
-        </span>
-        <div class="actions">
-          <button class="btn btn-approve" *ngIf="!c.estValide" (click)="validerApprentissage(c.id)">Valider</button>
+    <!-- BODY -->
+    <div class="content-body">
+
+      <!-- === STATS === -->
+      <ng-container *ngIf="onglet === 'stats' && stats">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrap"><span class="material-icons-outlined">people</span></div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stats.totalUtilisateurs }}</div>
+              <div class="stat-label">Utilisateurs</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap"><span class="material-icons-outlined">store</span></div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stats.totalProducteurs }}</div>
+              <div class="stat-label">Producteurs</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap"><span class="material-icons-outlined">shopping_cart</span></div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stats.commandesAbouties }}</div>
+              <div class="stat-label">Commandes livrées</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap"><span class="material-icons-outlined">paid</span></div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stats.revenuTotal | number }}</div>
+              <div class="stat-label">FCFA revenu</div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </ng-container>
 
-  <!-- Utilisateurs -->
-  <ng-container *ngIf="onglet === 'utilisateurs'">
-    <div *ngIf="utilisateurs.length; else empty">
-      <table>
-        <thead><tr><th>Nom</th><th>Email</th><th>Type</th><th>Localité</th><th>Vérifié</th><th></th></tr></thead>
-        <tbody>
-          <tr *ngFor="let u of utilisateurs">
-            <td>{{ u.prenom }} {{ u.nom }}</td>
-            <td>{{ u.email }}</td>
-            <td><span class="badge admin">{{ u.type }}</span></td>
-            <td>{{ u.localite }}</td>
-            <td>{{ u.estVerifie ? '✓' : '—' }}</td>
-            <td><button class="btn btn-delete" (click)="supprimerUtilisateur(u.id)">Supprimer</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </ng-container>
+        <!-- Graphiques d'évolution -->
+        <div class="charts-grid" *ngIf="stats.commandesParMois.length">
+          <app-admin-chart
+            title="Évolution des commandes"
+            subtitle="Nombre de commandes livrées par mois"
+            chartType="bar"
+            [labels]="chartLabels"
+            [datasets]="ordersDataset"
+          ></app-admin-chart>
 
-  <ng-template #empty><div class="empty">Aucun contenu.</div></ng-template>
+          <app-admin-chart
+            title="Évolution du revenu"
+            subtitle="Montant total par mois (FCFA)"
+            chartType="line"
+            [labels]="chartLabels"
+            [datasets]="revenueDataset"
+          ></app-admin-chart>
+
+          <app-admin-chart
+            title="Revenu cumulé"
+            subtitle="Total cumulé dans le temps (FCFA)"
+            chartType="line"
+            [labels]="cumulativeRevenueLabels"
+            [datasets]="cumulativeRevenueDataset"
+          ></app-admin-chart>
+
+          <app-admin-chart
+            title="Commandes vs Revenu moyen"
+            subtitle="Nombre de commandes et revenu moyen par commande"
+            chartType="bar"
+            [labels]="chartLabels"
+            [datasets]="mixedDataset"
+          ></app-admin-chart>
+        </div>
+
+        <!-- Répartition utilisateurs -->
+        <div class="charts-row" *ngIf="stats">
+          <app-admin-chart
+            title="Répartition des utilisateurs"
+            subtitle="Producteurs, Acheteurs et autres"
+            chartType="doughnut"
+            [labels]="userDistributionLabels"
+            [datasets]="userDistributionDataset"
+          ></app-admin-chart>
+        </div>
+
+        <!-- Tableau détaillé en dessous des graphiques -->
+        <div class="table-wrap" *ngIf="stats.commandesParMois.length">
+          <div class="table-title-bar">
+            <span class="table-title">Détail mensuel</span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Période</th>
+                <th>Commandes</th>
+                <th style="text-align:right">Montant</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of stats.commandesParMois">
+                <td class="td-name">{{ m.mois }}/{{ m.annee }}</td>
+                <td>{{ m.nombreCommandes }} commandes</td>
+                <td style="text-align:right;font-weight:700;color:var(--brand)">{{ m.montantTotal | number }} FCFA</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- === FORUM === -->
+      <ng-container *ngIf="onglet === 'forum'">
+        <div class="table-wrap">
+          <div class="table-title-bar">
+            <span class="table-title">Articles ({{ filteredArticles.length }})</span>
+            <input class="table-search" type="text" placeholder="Rechercher..." [(ngModel)]="searchQuery" />
+          </div>
+          <table class="data-table" *ngIf="filteredArticles.length; else emptyTpl">
+            <thead>
+              <tr>
+                <th>Titre</th>
+                <th>Categorie</th>
+                <th>Auteur</th>
+                <th>Date</th>
+                <th>Statut</th>
+                <th style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let a of filteredArticles">
+                <tr (click)="articleSelectionne = articleSelectionne === a.id ? null : a.id" style="cursor:pointer">
+                  <td class="td-name">{{ a.titre }}</td>
+                  <td><span class="badge badge-blue">{{ a.categorie }}</span></td>
+                  <td>{{ a.auteur?.pseudoForum || (a.auteur?.prenom + ' ' + a.auteur?.nom) }}</td>
+                  <td class="td-loc">{{ a.datePublication | date:'dd/MM/yyyy' }}</td>
+                  <td><span class="badge" [class.badge-ok]="a.estModere" [class.badge-warn]="!a.estModere">{{ a.estModere ? 'Approuve' : 'En attente' }}</span></td>
+                  <td style="text-align:right">
+                    <div class="td-actions" style="justify-content:flex-end">
+                      <button class="btn btn-green btn-sm" *ngIf="!a.estModere" (click)="$event.stopPropagation(); moderer(a.id, true)">
+                        <span class="material-icons-outlined">check</span> Approuver
+                      </button>
+                      <button class="btn btn-orange btn-sm" *ngIf="a.estModere" (click)="$event.stopPropagation(); moderer(a.id, false)">
+                        <span class="material-icons-outlined">block</span>
+                      </button>
+                      <button class="btn btn-red btn-sm" (click)="$event.stopPropagation(); supprimerArticle(a.id)">
+                        <span class="material-icons-outlined">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="articleSelectionne === a.id" class="expand-row">
+                  <td colspan="6">
+                    <div class="expand-content">
+                      <div class="expand-text">{{ a.contenu }}</div>
+                      <div class="comment-list" *ngIf="getCommentairesForArticle(a.id).length">
+                        <p style="font-size:12px;font-weight:700;color:var(--heading-color);margin-bottom:8px">Commentaires ({{ getCommentairesForArticle(a.id).length }})</p>
+                        <div class="comment-item" *ngFor="let c of getCommentairesForArticle(a.id)">
+                          <span class="comment-author">{{ c.auteurNom }}</span>
+                          <span class="comment-text">{{ c.contenu }}</span>
+                          <span class="comment-date">{{ c.dateCreation | date:'dd/MM' }}</span>
+                          <button class="btn btn-red btn-sm" (click)="$event.stopPropagation(); supprimerCommentaire(c.id)">
+                            <span class="material-icons-outlined">close</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- === APPRENTISSAGE === -->
+      <ng-container *ngIf="onglet === 'apprentissage'">
+        <div class="table-wrap">
+          <div class="table-title-bar">
+            <span class="table-title">Contenus ({{ apprentissages.length }})</span>
+          </div>
+          <table class="data-table" *ngIf="apprentissages.length; else emptyTpl">
+            <thead>
+              <tr>
+                <th>Titre</th>
+                <th>Type</th>
+                <th>Statut</th>
+                <th style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let c of apprentissages">
+                <tr (click)="articleSelectionne = articleSelectionne === c.id ? null : c.id" style="cursor:pointer">
+                  <td class="td-name">{{ c.titre }}</td>
+                  <td><span class="badge badge-blue">{{ c.typeContenu }}</span></td>
+                  <td><span class="badge" [class.badge-ok]="c.estValide" [class.badge-warn]="!c.estValide">{{ c.estValide ? 'Valide' : 'En attente' }}</span></td>
+                  <td style="text-align:right">
+                    <div class="td-actions" style="justify-content:flex-end">
+                      <button class="btn btn-green btn-sm" *ngIf="!c.estValide" (click)="$event.stopPropagation(); validerApprentissage(c.id)">
+                        <span class="material-icons-outlined">check</span> Valider
+                      </button>
+                      <button class="btn btn-red btn-sm" (click)="$event.stopPropagation(); supprimerApprentissage(c.id)">
+                        <span class="material-icons-outlined">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="articleSelectionne === c.id" class="expand-row">
+                  <td colspan="4">
+                    <div class="expand-content">
+                      <div class="expand-text">{{ c.contenu }}</div>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- === UTILISATEURS === -->
+      <ng-container *ngIf="onglet === 'utilisateurs'">
+        <div class="table-wrap">
+          <div class="table-title-bar">
+            <span class="table-title">Utilisateurs ({{ filteredUtilisateurs.length }})</span>
+            <input class="table-search" type="text" placeholder="Rechercher par nom, email, localite..." [(ngModel)]="searchQuery" />
+          </div>
+          <table class="data-table" *ngIf="filteredUtilisateurs.length; else emptyTpl">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Localite</th>
+                <th>Role</th>
+                <th>Statut</th>
+                <th style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let u of filteredUtilisateurs">
+                <td class="td-name">{{ u.prenom }} {{ u.nom }}</td>
+                <td class="td-email">{{ u.email }}</td>
+                <td class="td-loc">{{ u.localite }}</td>
+                <td><span class="badge badge-blue">{{ u.type }}</span></td>
+                <td>
+                  <span class="badge" [class.badge-ok]="!u.estSuspendu" [class.badge-red]="u.estSuspendu">{{ u.estSuspendu ? 'Suspendu' : 'Actif' }}</span>
+                  <span class="badge badge-green" *ngIf="u.estVerifie" style="margin-left:4px">Verifie</span>
+                </td>
+                <td style="text-align:right">
+                  <div class="td-actions" style="justify-content:flex-end">
+                    <button class="btn btn-sm" [class.btn-green]="u.estVerifie" [class.btn-outline]="!u.estVerifie" (click)="toggleVerification(u.id)">
+                      <span class="material-icons-outlined">{{ u.estVerifie ? 'verified' : 'help_outline' }}</span>
+                    </button>
+                    <button class="btn btn-sm" [class.btn-orange]="!u.estSuspendu" [class.btn-green]="u.estSuspendu" (click)="toggleSuspension(u.id)">
+                      <span class="material-icons-outlined">{{ u.estSuspendu ? 'play_circle' : 'pause_circle' }}</span>
+                    </button>
+                    <button class="btn btn-red btn-sm" (click)="supprimerUtilisateur(u.id)">
+                      <span class="material-icons-outlined">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- === VEDETTES === -->
+      <ng-container *ngIf="onglet === 'vedettes'">
+        <div class="panel-grid">
+          <div class="form-card">
+            <h3 class="form-card-title">Ajouter un produit vedette</h3>
+            <p class="form-card-sub">{{ produits.length }} produits disponibles</p>
+            <div class="form-grid">
+              <div class="form-group full">
+                <label class="form-label">Produit</label>
+                <select class="form-select" #produitSelect>
+                  <option value="">Selectionner un produit...</option>
+                  <option *ngFor="let p of produits" [value]="p.id">{{ p.titre }} ({{ p.prix }} FCFA)</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <div class="form-actions">
+                  <button class="btn btn-green" (click)="ajouterProduitVedette(produitSelect.value); produitSelect.value=''">
+                    <span class="material-icons-outlined">add</span> Ajouter
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- === COURS SEMENCES === -->
+      <ng-container *ngIf="onglet === 'cours'">
+        <div class="panel-grid">
+          <div class="form-card">
+            <h3 class="form-card-title">{{ editCoursId ? 'Modifier un cours' : 'Ajouter un cours' }}</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Produit</label>
+                <input class="form-input" type="text" [(ngModel)]="newCoursProduit" placeholder="Ex: Riz paddy" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Prix (FCFA)</label>
+                <input class="form-input" type="number" [(ngModel)]="newCoursPrix" placeholder="0" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Localite</label>
+                <input class="form-input" type="text" [(ngModel)]="newCoursLocalite" placeholder="Ville" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Source</label>
+                <input class="form-input" type="text" [(ngModel)]="newCoursSource" placeholder="Ex: SIM SONAGESS" />
+              </div>
+              <div class="form-group full">
+                <div class="form-actions">
+                  <button class="btn btn-green" (click)="ajouterOuModifierCours()">
+                    <span class="material-icons-outlined">{{ editCoursId ? 'edit' : 'add' }}</span>
+                    {{ editCoursId ? 'Modifier' : 'Ajouter' }}
+                  </button>
+                  <button class="btn btn-outline" *ngIf="editCoursId" (click)="annulerEditCours()">Annuler</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-wrap" style="grid-column: 1 / -1">
+            <div class="table-title-bar">
+              <span class="table-title">Cours semences ({{ coursSemences.length }})</span>
+            </div>
+            <table class="data-table" *ngIf="coursSemences.length; else emptyTpl">
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th>Localite</th>
+                  <th>Source</th>
+                  <th style="text-align:right">Prix</th>
+                  <th style="text-align:right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of coursSemences">
+                  <td class="td-name">{{ c.produit }}</td>
+                  <td>{{ c.localite }}</td>
+                  <td class="td-loc">{{ c.source }}</td>
+                  <td style="text-align:right;font-weight:700;color:var(--brand)">{{ c.prix | number }} FCFA</td>
+                  <td style="text-align:right">
+                    <div class="td-actions" style="justify-content:flex-end">
+                      <button class="btn btn-blue btn-sm" (click)="editCours(c)">
+                        <span class="material-icons-outlined">edit</span>
+                      </button>
+                      <button class="btn btn-red btn-sm" (click)="supprimerCours(c.id)">
+                        <span class="material-icons-outlined">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- === SIGNALEMENTS === -->
+      <ng-container *ngIf="onglet === 'signalements'">
+        <div class="table-wrap">
+          <div class="table-title-bar">
+            <span class="table-title">Signalements ({{ signalements.length }})</span>
+          </div>
+          <table class="data-table" *ngIf="signalements.length; else emptyTpl">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Auteur</th>
+                <th>Motif</th>
+                <th>Date</th>
+                <th>Statut</th>
+                <th style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of signalements">
+                <td class="td-name">
+                  <div class="signalement-type">
+                    <span class="badge badge-sm badge-blue">{{ s.typeCible }}</span>
+                    <span class="signalement-target">{{ s.cibleNom }}</span>
+                  </div>
+                </td>
+                <td>{{ s.auteurPrenom }} {{ s.auteurNom }}</td>
+                <td class="td-loc" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.motif }}</td>
+                <td class="td-loc">{{ s.dateCreation | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td><span class="badge" [class.badge-ok]="s.statut === 'RESOLU'" [class.badge-warn]="s.statut === 'EN_ATTENTE'" [class.badge-blue]="s.statut === 'REJETE'">{{ s.statut === 'EN_ATTENTE' ? 'En attente' : s.statut === 'RESOLU' ? 'Resolu' : 'Rejete' }}</span></td>
+                <td style="text-align:right">
+                  <div class="td-actions" style="justify-content:flex-end" *ngIf="s.statut === 'EN_ATTENTE'">
+                    <button class="btn btn-green btn-sm" (click)="updateSignalementStatut(s.id, 'RESOLU')">
+                      <span class="material-icons-outlined">check</span> Resoudre
+                    </button>
+                    <button class="btn btn-red btn-sm" (click)="updateSignalementStatut(s.id, 'REJETE')">
+                      <span class="material-icons-outlined">close</span> Rejeter
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- === BADGES === -->
+      <ng-container *ngIf="onglet === 'badges'">
+        <div class="table-wrap">
+          <div class="table-title-bar">
+            <span class="table-title">Demandes en attente ({{ badges.length }})</span>
+          </div>
+          <table class="data-table" *ngIf="badges.length; else emptyTpl">
+            <thead>
+              <tr>
+                <th>Utilisateur</th>
+                <th>Badge</th>
+                <th>Date</th>
+                <th>Document</th>
+                <th>Commentaire</th>
+                <th style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let b of badges">
+                <td class="td-name">{{ b.utilisateur?.prenom }} {{ b.utilisateur?.nom }}</td>
+                <td><span class="badge badge-blue">{{ b.type }}</span></td>
+                <td class="td-loc">{{ b.dateDemande | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td><a *ngIf="b.documentUrl" [href]="b.documentUrl" target="_blank" style="color:var(--brand);font-size:12px;text-decoration:underline">Voir</a></td>
+                <td>
+                  <input class="form-input" type="text" [ngModel]="badgeCommentaires[b.id]" (ngModelChange)="badgeCommentaires[b.id] = $event" placeholder="Commentaire..." style="padding:6px 10px;font-size:12px;width:180px" />
+                </td>
+                <td style="text-align:right">
+                  <div class="td-actions" style="justify-content:flex-end">
+                    <button class="btn btn-green btn-sm" (click)="traiterBadge(b.id, 'VALIDE')">
+                      <span class="material-icons-outlined">check</span> Valider
+                    </button>
+                    <button class="btn btn-red btn-sm" (click)="traiterBadge(b.id, 'REFUSE')">
+                      <span class="material-icons-outlined">close</span> Refuser
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- === MESSAGES === -->
+      <ng-container *ngIf="onglet === 'messages'">
+        <div class="panel-grid">
+          <div class="table-wrap">
+            <div class="table-title-bar">
+              <span class="table-title">Conversations ({{ conversations.length }})</span>
+            </div>
+            <table class="data-table" *ngIf="conversations.length; else emptyTpl">
+              <thead>
+                <tr>
+                  <th>Participants</th>
+                  <th>Date</th>
+                  <th>Statut</th>
+                  <th style="text-align:right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let conv of conversations">
+                  <tr (click)="articleSelectionne = articleSelectionne === conv.id ? null : conv.id" style="cursor:pointer">
+                    <td class="td-name">{{ conv.participants.join(', ') }}</td>
+                    <td class="td-loc">{{ conv.dateDebut | date:'dd/MM/yyyy' }}</td>
+                    <td><span class="badge" [class.badge-ok]="conv.estActive" [class.badge-warn]="!conv.estActive">{{ conv.estActive ? 'Active' : 'Ferme' }}</span></td>
+                    <td style="text-align:right">
+                      <button class="btn btn-red btn-sm" (click)="$event.stopPropagation(); supprimerConversation(conv.id)">
+                        <span class="material-icons-outlined">delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="articleSelectionne === conv.id && conv.messages?.length" class="expand-row">
+                    <td colspan="4">
+                      <div class="expand-content">
+                        <div class="msg-list">
+                          <div class="msg-item" *ngFor="let m of conv.messages">
+                            <span class="msg-sender">{{ m.expediteurNom }}</span>
+                            <span class="msg-body">{{ m.contenu }}</span>
+                            <span class="msg-time">{{ m.dateEnvoi | date:'dd/MM HH:mm' }}</span>
+                            <button class="btn btn-red btn-sm" (click)="$event.stopPropagation(); supprimerMessage(m.id)">
+                              <span class="material-icons-outlined">delete</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-wrap">
+            <div class="table-title-bar">
+              <span class="table-title">Messages par utilisateur</span>
+            </div>
+            <table class="data-table" *ngIf="messagesParUtilisateur.length; else emptyTpl">
+              <thead>
+                <tr>
+                  <th>Utilisateur</th>
+                  <th>Messages</th>
+                  <th style="text-align:right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let groupe of messagesParUtilisateur">
+                  <tr (click)="userMessagesSelection = userMessagesSelection === groupe.utilisateurId ? null : groupe.utilisateurId" style="cursor:pointer">
+                    <td class="td-name">{{ groupe.nom }}</td>
+                    <td><span class="badge badge-blue">{{ groupe.messages.length }}</span></td>
+                    <td style="text-align:right"></td>
+                  </tr>
+                  <tr *ngIf="userMessagesSelection === groupe.utilisateurId" class="expand-row">
+                    <td colspan="3">
+                      <div class="expand-content">
+                        <div class="msg-list">
+                          <div class="msg-item" *ngFor="let m of groupe.messages">
+                            <span class="msg-body">{{ m.contenu }}</span>
+                            <span class="msg-time">{{ m.dateEnvoi | date:'dd/MM/yyyy HH:mm' }}</span>
+                            <button class="btn btn-red btn-sm" (click)="$event.stopPropagation(); supprimerMessage(m.id)">
+                              <span class="material-icons-outlined">delete</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- === PARAMETRES === -->
+      <ng-container *ngIf="onglet === 'parametres'">
+        <div class="panel-grid">
+          <div class="form-card">
+            <h3 class="form-card-title">Commission</h3>
+            <p class="form-card-sub">Pourcentage preleve sur chaque transaction</p>
+            <div class="form-grid">
+              <div class="form-group full">
+                <label class="form-label">Taux de commission (%)</label>
+                <input class="form-input" type="number" #commissionValue [value]="getParametre('commission_rate')" placeholder="Ex: 5" />
+              </div>
+              <div class="form-group full">
+                <div class="form-actions">
+                  <button class="btn btn-green" (click)="saveParametre('commission_rate', commissionValue.value, 'BIGDECIMAL', 'Taux de commission plateforme en pourcentage')">
+                    <span class="material-icons-outlined">save</span> Enregistrer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <h3 class="form-card-title">YengaPay</h3>
+            <p class="form-card-sub">Integration paiement mobile money</p>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Activer YengaPay</label>
+                <select class="form-select" #yengaEnabled [value]="getParametre('yengapay_enabled')" (change)="saveParametre('yengapay_enabled', yengaEnabled.value, 'BOOLEAN', 'Activer integration YengaPay')">
+                  <option value="true">Active</option>
+                  <option value="false">Desactive</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mode sandbox</label>
+                <select class="form-select" #sandboxValue [value]="getParametre('yengapay_sandbox_mode')" (change)="saveParametre('yengapay_sandbox_mode', sandboxValue.value, 'BOOLEAN', 'Mode sandbox YengaPay')">
+                  <option value="true">Sandbox (test)</option>
+                  <option value="false">Production</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Cle API</label>
+                <input class="form-input" type="text" #apiKeyValue [value]="getParametre('yengapay_api_key')" placeholder="Cle API" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Identifiant marchand</label>
+                <input class="form-input" type="text" #merchantIdValue [value]="getParametre('yengapay_merchant_id')" placeholder="ID marchand" />
+              </div>
+              <div class="form-group full">
+                <div class="form-actions">
+                  <button class="btn btn-green" (click)="saveParametre('yengapay_api_key', apiKeyValue.value, 'STRING', 'Cle API YengaPay'); saveParametre('yengapay_merchant_id', merchantIdValue.value, 'STRING', 'Identifiant marchand YengaPay')">
+                    <span class="material-icons-outlined">save</span> Enregistrer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyTpl>
+        <div class="empty-state">
+          <span class="material-icons-outlined empty-icon">inbox</span>
+          <p>Aucun contenu</p>
+        </div>
+      </ng-template>
+
+    </div>
+  </main>
 </div>

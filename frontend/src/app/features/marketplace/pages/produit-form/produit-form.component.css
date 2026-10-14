@@ -4,11 +4,24 @@
   padding: 1.5rem 1rem;
 }
 
-.back-link { color: #1a5c2a; text-decoration: none; font-size: 0.9rem; }
+.back-link {
+  color: var(--g-700);
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.back-link:hover { text-decoration: underline; }
 
-h2 { font-size: 1.4rem; margin: 0.75rem 0 1.25rem; }
+h2 { font-family: var(--font-display); font-size: 1.4rem; margin: 0.75rem 0 1.25rem; }
 
-form { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 1.25rem; }
+form {
+  background: #fff;
+  border: 1px solid var(--n-100);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
 
 .form-group {
   display: flex;
@@ -21,18 +34,22 @@ form { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding
 .form-group label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #555;
+  color: var(--n-600);
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
   padding: 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  border: 1px solid var(--n-300);
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
   font-family: inherit;
+  transition: border-color 0.2s;
 }
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus { outline: none; border-color: var(--g-500); }
 
 .form-row {
   display: flex;
@@ -42,14 +59,23 @@ form { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding
 .btn-submit {
   width: 100%;
   padding: 0.8rem;
-  background: #1a5c2a;
+  background: var(--g-700);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   margin-top: 0.5rem;
+  transition: all 0.2s;
 }
-.btn-submit:hover { background: #2e7d32; }
+.btn-submit:hover { background: var(--g-600); }
 .btn-submit:disabled { opacity: 0.5; cursor: default; }
+
+.photos-list { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.photo-item { position: relative; width: 80px; height: 80px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--n-200); }
+.photo-preview { width: 100%; height: 100%; object-fit: cover; }
+.btn-remove-photo { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff; font-size: 1rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.upload-area { border: 2px dashed var(--n-300); border-radius: var(--radius-sm); padding: 1rem; text-align: center; transition: border-color 0.2s; }
+.upload-area:hover { border-color: var(--g-400); }
+.upload-area input[type="file"] { font-size: 0.85rem; }

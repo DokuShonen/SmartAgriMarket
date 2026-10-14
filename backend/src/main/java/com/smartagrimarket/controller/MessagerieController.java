@@ -35,6 +35,12 @@ public class MessagerieController {
         return ResponseEntity.ok(messagerieService.getConversationsByUser(userId));
     }
 
+    @GetMapping("/conversations/{id}")
+    public ResponseEntity<ConversationResponse> getConversation(@PathVariable UUID id) {
+        UUID userId = securityUtil.getCurrentUserId();
+        return ResponseEntity.ok(messagerieService.getConversationById(id, userId));
+    }
+
     @PostMapping("/messages")
     public ResponseEntity<ConversationResponse> sendMessage(
             @Valid @RequestBody MessageRequest request) {

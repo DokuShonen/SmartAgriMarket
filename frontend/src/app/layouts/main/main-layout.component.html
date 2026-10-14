@@ -1,48 +1,166 @@
-<header class="topbar">
-  <div class="container topbar-inner">
-    <a routerLink="/" class="logo">SmartAgriMarket</a>
-    <nav class="nav-links">
-      <a routerLink="/produits">Produits</a>
-      <a routerLink="/materiel">Matériel</a>
-      <a routerLink="/messagerie">Messagerie</a>
-      <a routerLink="/forum">Forum</a>
-      <a routerLink="/logistique">Livraisons</a>
-    </nav>
-    <div class="auth-links">
-      <ng-container *ngIf="auth.utilisateur(); else guest">
-        <a routerLink="/profil" class="user-name">{{ auth.utilisateur()!.prenom }}</a>
-        <a routerLink="/admin" class="btn-admin" *ngIf="auth.utilisateur()?.type === 'ADMIN'">Admin</a>
-        <button class="btn-logout" (click)="deconnexion()">Déconnexion</button>
+<app-toast></app-toast>
+<app-onboarding></app-onboarding>
+
+<a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+<!-- ===== TOPBAR ===== -->
+<header class="topbar" role="banner">
+  <div class="topbar-row">
+    <a routerLink="/" class="logo" aria-label="SmartAgriMarket - Accueil">
+      <img src="assets/logo.png" alt="" class="logo-img" />
+      <span class="logo-text">Smart<span class="logo-green">Agri</span>Market</span>
+    </a>
+
+    <!-- Desktop nav -->
+    <nav class="desktop-nav" role="navigation" aria-label="Navigation principale">
+      <a routerLink="/" class="nav-pill" [class.active]="router.url === '/' || router.url === ''">
+        <span class="material-icons-outlined">home</span> Accueil
+      </a>
+      <!-- Admin nav -->
+      <ng-container *ngIf="isAdmin(); else regularNav">
+        <a routerLink="/admin" class="nav-pill" [class.active]="isActive('/admin')">
+          <span class="material-icons-outlined">dashboard</span> Dashboard
+        </a>
       </ng-container>
-      <ng-template #guest>
-        <a routerLink="/connexion" class="btn-login">Connexion</a>
-        <a routerLink="/inscription" class="btn-register">Inscription</a>
+      <!-- Regular user nav -->
+      <ng-template #regularNav>
+        <a routerLink="/produits" class="nav-pill" [class.active]="isActive('/produits')">
+          <span class="material-icons-outlined">storefront</span> Produits
+        </a>
+        <a routerLink="/produits/panier" class="nav-pill" *ngIf="auth.utilisateur()" [class.active]="isActive('/produits/panier')">
+          <span class="material-icons-outlined">shopping_cart</span> Panier
+          <span class="pill-badge" *ngIf="panierCount > 0" aria-live="polite" [attr.aria-label]="panierCount + ' articles dans le panier'">{{ panierCount }}</span>
+        </a>
+        <a routerLink="/materiel" class="nav-pill" [class.active]="isActive('/materiel')">
+          <span class="material-icons-outlined">agriculture</span> Matériel
+        </a>
+        <a routerLink="/forum" class="nav-pill" [class.active]="isActive('/forum')">
+          <span class="material-icons-outlined">forum</span> Forum
+        </a>
+      </ng-template>
+    </nav>
+
+    <!-- Desktop auth -->
+    <div class="desktop-auth">
+      <ng-container *ngIf="auth.utilisateur(); else desktopGuest">
+        <button class="icon-btn" (click)="toggleNotifications()">
+          <span class="material-icons-outlined">notifications</span>
+          <span class="icon-badge" *ngIf="nonLues > 0">{{ nonLues }}</span>
+        </button>
+        <a routerLink="/profil" class="avatar-btn" [class.has-photo]="!!auth.utilisateur()?.photoProfil">
+          <img *ngIf="auth.utilisateur()?.photoProfil" [src]="auth.utilisateur()!.photoProfil" (error)="auth.utilisateur()!.photoProfil = undefined" class="avatar-img" />
+          <span class="avatar-initial" *ngIf="!auth.utilisateur()?.photoProfil">{{ (auth.utilisateur()?.prenom || '?').charAt(0).toUpperCase() }}</span>
+        </a>
+        <a routerLink="/admin" class="admin-chip" *ngIf="isAdmin()">
+          <span class="material-icons-outlined">admin_panel_settings</span> Admin
+        </a>
+        <button class="icon-btn" (click)="deconnexion()">
+          <span class="material-icons-outlined">logout</span>
+        </button>
+      </ng-container>
+      <ng-template #desktopGuest>
+        <a routerLink="/connexion" class="btn-outline-sm">Connexion</a>
+        <a routerLink="/inscription" class="btn-fill-sm">Inscription</a>
+      </ng-template>
+    </div>
+
+    <!-- Mobile: notifications + avatar + logout -->
+    <div class="mobile-auth" *ngIf="auth.utilisateur()">
+      <button class="icon-btn" (click)="toggleNotifications()">
+        <span class="material-icons-outlined">notifications</span>
+        <span class="icon-badge" *ngIf="nonLues > 0">{{ nonLues }}</span>
+      </button>
+      <a routerLink="/profil" class="avatar-btn" [class.has-photo]="!!auth.utilisateur()?.photoProfil">
+        <img *ngIf="auth.utilisateur()?.photoProfil" [src]="auth.utilisateur()!.photoProfil" (error)="auth.utilisateur()!.photoProfil = undefined" class="avatar-img" />
+        <span class="avatar-initial" *ngIf="!auth.utilisateur()?.photoProfil">{{ (auth.utilisateur()?.prenom || '?').charAt(0).toUpperCase() }}</span>
+      </a>
+      <button class="icon-btn" (click)="deconnexion()">
+        <span class="material-icons-outlined">logout</span>
+      </button>
+    </div>
+    <div class="mobile-auth" *ngIf="!auth.utilisateur()">
+      <a routerLink="/connexion" class="icon-btn" aria-label="Connexion / Inscription">
+        <span class="material-icons-outlined">account_circle</span>
+      </a>
+    </div>
+
+    <!-- Notifications dropdown -->
+    <div class="notif-panel" *ngIf="showNotifications" (click)="$event.stopPropagation()">
+      <div class="notif-panel-header">
+        <span class="notif-panel-title">Notifications</span>
+        <button class="notif-panel-action" (click)="marquerToutLu()" *ngIf="nonLues > 0">Tout lire</button>
+      </div>
+      <div class="notif-list" *ngIf="notifications.length; else noNotif">
+        <div *ngFor="let n of notifications" class="notif-row" [class.unread]="!n.estLue" (click)="marquerLue(n)">
+          <div class="notif-icon-wrap">
+            <span class="material-icons-outlined">notifications</span>
+          </div>
+          <div class="notif-content">
+            <span class="notif-title">{{ n.titre }}</span>
+            <span class="notif-body">{{ n.contenu }}</span>
+            <span class="notif-time">{{ n.dateCreation | date:'dd/MM HH:mm' }}</span>
+          </div>
+        </div>
+      </div>
+      <ng-template #noNotif>
+        <div class="notif-empty">
+          <span class="material-icons-outlined">notifications_none</span>
+          <span>Aucune notification</span>
+        </div>
       </ng-template>
     </div>
   </div>
 </header>
-<main><router-outlet /></main>
 
-<!-- Mobile bottom nav -->
-<nav class="bottom-nav">
-  <a routerLink="/" class="nav-item" [class.active]="isActive('/')">
-    <span class="nav-icon">🏠</span>
-    <span class="nav-label">Accueil</span>
+<!-- Overlay pour fermer les dropdowns -->
+<div class="overlay" *ngIf="showNotifications" (click)="showNotifications = false"></div>
+
+<!-- ===== CONTENU ===== -->
+<main id="main-content" role="main"><router-outlet /></main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer" *ngIf="!isMobile">
+  <div class="footer-inner">
+    <span class="material-icons-outlined">info</span>
+    <p>SmartAgriMarket met en relation acheteurs et vendeurs. Toute transaction effectuée hors de la plateforme engage exclusivement la responsabilité des parties.</p>
+  </div>
+</footer>
+
+<!-- ===== BOTTOM NAV BAR — Native App ===== -->
+<nav class="tab-bar">
+  <a class="tab-item" [class.active]="router.url === '/' || router.url === ''" routerLink="/">
+    <span class="material-icons-outlined">home</span>
+    <span class="tab-label">Accueil</span>
   </a>
-  <a routerLink="/produits" class="nav-item" [class.active]="isActive('/produits')">
-    <span class="nav-icon">🌾</span>
-    <span class="nav-label">Produits</span>
-  </a>
-  <a routerLink="/materiel" class="nav-item" [class.active]="isActive('/materiel')">
-    <span class="nav-icon">🔧</span>
-    <span class="nav-label">Matériel</span>
-  </a>
-  <a routerLink="/messagerie" class="nav-item" [class.active]="isActive('/messagerie')">
-    <span class="nav-icon">💬</span>
-    <span class="nav-label">Messages</span>
-  </a>
-  <a routerLink="/profil" class="nav-item" [class.active]="isActive('/profil')">
-    <span class="nav-icon">👤</span>
-    <span class="nav-label">Profil</span>
+  <!-- Admin bottom nav -->
+  <ng-container *ngIf="isAdmin(); else regularTabs">
+    <a class="tab-item" [class.active]="isActive('/admin')" routerLink="/admin">
+      <span class="material-icons-outlined">dashboard</span>
+      <span class="tab-label">Dashboard</span>
+    </a>
+  </ng-container>
+  <!-- Regular user bottom nav -->
+  <ng-template #regularTabs>
+    <a class="tab-item" [class.active]="isActive('/produits')" routerLink="/produits">
+      <span class="material-icons-outlined">storefront</span>
+      <span class="tab-label">Produits</span>
+    </a>
+    <a class="tab-item" [class.active]="isActive('/materiel')" routerLink="/materiel">
+      <span class="material-icons-outlined">agriculture</span>
+      <span class="tab-label">Materiel</span>
+    </a>
+    <a class="tab-item" [class.active]="isActive('/produits/panier')" routerLink="/produits/panier" *ngIf="auth.utilisateur()">
+      <span class="material-icons-outlined">shopping_cart</span>
+      <span class="tab-label">Panier</span>
+      <span class="tab-badge" *ngIf="panierCount > 0">{{ panierCount }}</span>
+    </a>
+    <a class="tab-item" [class.active]="isActive('/messagerie')" routerLink="/messagerie">
+      <span class="material-icons-outlined">chat</span>
+      <span class="tab-label">Messages</span>
+    </a>
+  </ng-template>
+  <a class="tab-item" [class.active]="isActive('/profil')" routerLink="/profil">
+    <span class="material-icons-outlined">person</span>
+    <span class="tab-label">Profil</span>
   </a>
 </nav>

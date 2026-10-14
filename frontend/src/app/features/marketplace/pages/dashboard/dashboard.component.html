@@ -1,38 +1,74 @@
-<div class="dashboard-container">
-  <div class="dashboard-header">
-    <h2>Mes annonces</h2>
-    <a routerLink="/produits/ajouter" class="btn-add">+ Nouveau produit</a>
+<div class="dash-page">
+  <div class="dash-header">
+    <h1>Mes produits</h1>
+    <p class="dash-count">{{ produits.length }} produit(s)</p>
   </div>
 
-  <div *ngIf="produits.length; else empty">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Produit</th>
-          <th>Prix</th>
-          <th>Stock</th>
-          <th>Catégorie</th>
-          <th>Publié le</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let p of produits">
-          <td><a [routerLink]="'/produits/' + p.id" class="link">{{ p.titre }}</a></td>
-          <td>{{ p.prix | number }} FCFA</td>
-          <td>{{ p.quantiteDisponible }} {{ p.uniteVente }}</td>
-          <td>{{ p.categorie }}</td>
-          <td>{{ p.datePublication | date:'dd/MM/yyyy' }}</td>
-          <td class="actions-cell">
-            <a [routerLink]="'/produits/editer/' + p.id" class="btn-sm">✏️</a>
-            <button (click)="supprimer(p.id)" class="btn-sm btn-danger">🗑️</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- STATS -->
+  <div class="stats-row" *ngIf="produits.length">
+    <div class="stat-card">
+      <span class="material-icons-outlined">inventory</span>
+      <div><span class="stat-value">{{ produits.length }}</span><span class="stat-label">Produits</span></div>
+    </div>
+    <div class="stat-card">
+      <span class="material-icons-outlined">trending_up</span>
+      <div><span class="stat-value">{{ getStockTotal() }}</span><span class="stat-label">Stock total</span></div>
+    </div>
+  </div>
+
+  <!-- PRODUCT LIST -->
+  <div *ngIf="produits.length; else empty" class="product-list">
+    <div *ngFor="let p of produits" class="product-row">
+      <div class="row-img" [routerLink]="'/produits/' + p.id">
+        <span class="material-icons-outlined">inventory_2</span>
+      </div>
+      <div class="row-info" [routerLink]="'/produits/' + p.id">
+        <h3>{{ p.titre }}</h3>
+        <div class="row-meta">
+          <span class="row-price">{{ p.prix | number }} FCFA</span>
+          <span class="row-cat">{{ p.categorie }}</span>
+        </div>
+        <div class="row-bottom">
+          <span class="stock-tag" [class.low]="p.quantiteDisponible < 5">
+            {{ p.quantiteDisponible }} {{ p.uniteVente }}
+          </span>
+          <span class="row-date">{{ p.datePublication | date:'dd/MM' }}</span>
+        </div>
+      </div>
+      <div class="status-badge" [class.inactive]="!p.estActif">
+        {{ p.estActif ? 'Actif' : 'Inactif' }}
+      </div>
+      <div class="row-actions">
+        <button class="action-btn" [class.active]="!p.estActif" (click)="toggleProduit(p.id)" title="Activer/Désactiver">
+          <span class="material-icons-outlined">{{ p.estActif ? 'visibility_off' : 'visibility' }}</span>
+        </button>
+        <button class="action-btn" (click)="showEditForm(p)" title="Modifier">
+          <span class="material-icons-outlined">edit</span>
+        </button>
+        <button class="action-btn danger" (click)="supprimer(p.id)" title="Supprimer">
+          <span class="material-icons-outlined">delete_outline</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <ng-template #empty>
-    <div class="empty">Vous n'avez pas encore d'annonces.</div>
+    <div class="empty-state">
+      <span class="material-icons-outlined">inventory_2</span>
+      <h3>Aucune annonce</h3>
+      <p>Commencez par publier votre premier produit</p>
+      <button class="btn-add" (click)="showForm = true" *ngIf="peutPublier">
+        <span class="material-icons-outlined">add</span> Publier un produit
+      </button>
+    </div>
   </ng-template>
+
+  <!-- FAB -->
+  <button class="fab" (click)="showForm = true" *ngIf="produits.length && peutPublier">
+    <span class="material-icons-outlined">add</span>
+  </button>
 </div>
+
+<app-modal [open]="showForm" [titre]="editingId ? 'Modifier le produit' : 'Nouveau produit'" (closed)="closeForm()">
+  <app-produit-form [editId]="editingId" (saved)="closeForm()" (cancelled)="closeForm()"></app-produit-form>
+</app-modal>

@@ -11,4 +11,5 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, UUID> 
     Optional<Utilisateur> findByEmail(String email);
     List<Utilisateur> findByType(TypeUtilisateur type);
     List<Utilisateur> findByLocalite(String localite);
+    Optional<Utilisateur> findByPseudoForum(String pseudoForum);
 }

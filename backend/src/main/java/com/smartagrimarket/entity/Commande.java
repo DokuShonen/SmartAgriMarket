@@ -22,6 +22,9 @@ public class Commande {
     @Column(nullable = false)
     private LocalDateTime dateCreation;
 
+    @Column(nullable = false)
+    private LocalDateTime dateDerniereModification;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatutCommande statut;
@@ -37,6 +40,8 @@ public class Commande {
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+
+    private String modePaiement;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "acheteur_id", nullable = false)
@@ -55,5 +60,11 @@ public class Commande {
     @PrePersist
     protected void onCreate() {
         dateCreation = LocalDateTime.now();
+        dateDerniereModification = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        dateDerniereModification = LocalDateTime.now();
     }
 }

@@ -26,9 +26,9 @@ public class ForumController {
         return ResponseEntity.ok(forumService.getAllArticles());
     }
 
-    @GetMapping("/articles/categorie/{categorie}")
-    public ResponseEntity<List<ArticleForum>> getByCategorie(@PathVariable String categorie) {
-        return ResponseEntity.ok(forumService.getArticlesByCategorie(categorie));
+    @GetMapping("/articles/recherche")
+    public ResponseEntity<List<ArticleForum>> rechercher(@RequestParam String q) {
+        return ResponseEntity.ok(forumService.rechercherArticles(q));
     }
 
     @PostMapping("/articles")
@@ -47,9 +47,20 @@ public class ForumController {
         return ResponseEntity.ok(forumService.modererArticle(id, estModere));
     }
 
+    @DeleteMapping("/articles/{id}")
+    public ResponseEntity<Void> supprimerArticle(@PathVariable UUID id) {
+        forumService.supprimerArticle(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/apprentissage")
     public ResponseEntity<List<ContenuApprentissage>> getAllContenus() {
         return ResponseEntity.ok(forumService.getAllContenus());
+    }
+
+    @GetMapping("/apprentissage/{id}")
+    public ResponseEntity<ContenuApprentissage> getContenuById(@PathVariable UUID id) {
+        return ResponseEntity.ok(forumService.getContenuById(id));
     }
 
     @PostMapping("/apprentissage")
@@ -57,13 +68,20 @@ public class ForumController {
             @RequestParam String titre,
             @RequestParam String typeContenu,
             @RequestParam String contenu) {
+        UUID auteurId = securityUtil.getCurrentUserIdOrNull();
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(forumService.createContenu(titre, typeContenu, contenu));
+                .body(forumService.createContenu(titre, typeContenu, contenu, auteurId));
     }
 
     @PatchMapping("/apprentissage/{id}/valider")
     public ResponseEntity<ContenuApprentissage> validerContenu(@PathVariable UUID id) {
         UUID valideParId = securityUtil.getCurrentUserId();
         return ResponseEntity.ok(forumService.validerContenu(id, valideParId));
+    }
+
+    @DeleteMapping("/apprentissage/{id}")
+    public ResponseEntity<Void> deleteContenu(@PathVariable UUID id) {
+        forumService.deleteContenu(id);
+        return ResponseEntity.noContent().build();
     }
 }

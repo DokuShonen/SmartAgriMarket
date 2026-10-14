@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgFor, NgIf, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { PanierItem, PanierService } from '../../../../core/services/panier.service';
@@ -10,11 +10,16 @@ import { PanierItem, PanierService } from '../../../../core/services/panier.serv
   templateUrl: './panier.component.html',
   styleUrls: ['./panier.component.css']
 })
-export class PanierComponent {
+export class PanierComponent implements OnInit {
   items: PanierItem[] = [];
 
-  constructor(private panierService: PanierService) {
-    this.panierService.getItems().subscribe(items => this.items = items);
+  constructor(private panierService: PanierService) {}
+
+  ngOnInit() {
+    this.items = this.panierService.getSnapshot();
+    this.panierService.getItems().subscribe(items => {
+      this.items = items;
+    });
   }
 
   updateQte(produitId: string, qte: number) {
@@ -27,5 +32,9 @@ export class PanierComponent {
 
   get total(): number {
     return this.items.reduce((s, i) => s + i.produit.prix * i.quantite, 0);
+  }
+
+  get totalItems(): number {
+    return this.items.reduce((s, i) => s + i.quantite, 0);
   }
 }

@@ -10,6 +10,14 @@ export class CommandeService extends ApiService {
     return this.http.post<Commande>(`${this.baseUrl}/commandes`, data);
   }
 
+  confirmerCommande(id: string): Observable<Commande> {
+    return this.http.post<Commande>(`${this.baseUrl}/commandes/${id}/confirmer`, {});
+  }
+
+  payer(id: string, methode: string): Observable<Commande> {
+    return this.http.post<Commande>(`${this.baseUrl}/commandes/${id}/payer`, { methode });
+  }
+
   getMesCommandes(): Observable<Commande[]> {
     return this.http.get<Commande[]>(`${this.baseUrl}/commandes/acheteur`);
   }
@@ -20,5 +28,17 @@ export class CommandeService extends ApiService {
 
   updateStatut(id: string, statut: string): Observable<Commande> {
     return this.http.patch<Commande>(`${this.baseUrl}/commandes/${id}/statut?statut=${statut}`, {});
+  }
+
+  preparer(id: string): Observable<Commande> {
+    return this.http.post<Commande>(`${this.baseUrl}/commandes/${id}/preparer`, {});
+  }
+
+  expedier(id: string): Observable<Commande> {
+    return this.http.post<Commande>(`${this.baseUrl}/commandes/${id}/expedier`, {});
+  }
+
+  confirmerReception(id: string): Observable<Commande> {
+    return this.http.post<Commande>(`${this.baseUrl}/commandes/${id}/confirmer-reception`, {});
   }
 }

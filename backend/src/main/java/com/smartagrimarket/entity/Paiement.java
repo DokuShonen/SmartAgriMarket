@@ -1,5 +1,6 @@
 package com.smartagrimarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -30,6 +31,10 @@ public class Paiement {
 
     private LocalDateTime datePaiement;
 
+    @Column(nullable = false)
+    private boolean rembourse;
+
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "commande_id", nullable = false)
     private Commande commande;

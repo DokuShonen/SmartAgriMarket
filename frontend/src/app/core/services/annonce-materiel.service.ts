@@ -21,6 +21,10 @@ export class AnnonceMaterielService extends ApiService {
     return this.http.post<AnnonceMateriel>(`${this.baseUrl}/materiel`, data);
   }
 
+  update(id: string, data: any): Observable<AnnonceMateriel> {
+    return this.http.put<AnnonceMateriel>(`${this.baseUrl}/materiel/${id}`, data);
+  }
+
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/materiel/${id}`);
   }

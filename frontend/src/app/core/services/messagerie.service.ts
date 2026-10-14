@@ -10,6 +10,16 @@ export class MessagerieService extends ApiService {
     return this.http.get<Conversation[]>(`${this.baseUrl}/messagerie/conversations`);
   }
 
+  getConversation(id: string): Observable<Conversation> {
+    return this.http.get<Conversation>(`${this.baseUrl}/messagerie/conversations/${id}`);
+  }
+
+  createConversation(destinataireId: string, produitId?: string): Observable<Conversation> {
+    let params = `destinataireId=${destinataireId}`;
+    if (produitId) params += `&produitId=${produitId}`;
+    return this.http.post<Conversation>(`${this.baseUrl}/messagerie/conversations?${params}`, {});
+  }
+
   sendMessage(contenu: string, conversationId?: string): Observable<any> {
     return this.http.post(`${this.baseUrl}/messagerie/messages`, {
       conversationId,

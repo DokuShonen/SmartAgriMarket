@@ -1,67 +1,89 @@
-<div class="catalogue-container">
-  <!-- Filtres -->
-  <aside class="filter-sidebar">
-    <h3>Filtres</h3>
+<div class="catalogue-page">
+  <app-loading *ngIf="chargement || erreur" [erreur]="erreur" (retry)="reessayer()"></app-loading>
 
-    <div class="filter-group">
-      <label>Mot-clé</label>
-      <input type="text" [(ngModel)]="keyword" (input)="onSearch()" placeholder="Rechercher..." />
+  <ng-container *ngIf="!chargement && !erreur">
+  <!-- HEADER + SEARCH -->
+  <div class="catalogue-top">
+    <h1>Catalogue</h1>
+    <p class="catalogue-count">{{ totalElements }} produit(s)</p>
+    <app-search-bar
+      [query]="keyword"
+    (queryChange)="keyword = $event; onSearch()"
+    placeholder="Rechercher un produit..."
+    ariaLabel="Rechercher un produit"
+  ></app-search-bar>
+  </div>
+
+  <!-- FILTER CHIPS -->
+  <app-filter-chips
+    [chips]="categoryChips"
+    [selected]="selectedCategorie"
+    (selectedChange)="selectedCategorie = $event; onSearch()"
+  ></app-filter-chips>
+
+  <!-- PRICE FILTERS -->
+  <div class="price-filters">
+    <div class="price-input">
+      <label for="prixMin">Min</label>
+      <input id="prixMin" type="number" [(ngModel)]="prixMin" (input)="onSearch()" placeholder="0" />
     </div>
-
-    <div class="filter-group">
-      <label>Catégorie</label>
-      <select [(ngModel)]="selectedCategorie" (change)="onSearch()">
-        <option value="">Toutes</option>
-        <option *ngFor="let c of categories" [value]="c.id">{{ c.nom }}</option>
-      </select>
+    <span class="price-sep">—</span>
+    <div class="price-input">
+      <label for="prixMax">Max</label>
+      <input id="prixMax" type="number" [(ngModel)]="prixMax" (input)="onSearch()" placeholder="∞" />
     </div>
-
-    <div class="filter-group">
-      <label>Localité</label>
-      <input type="text" [(ngModel)]="localite" (input)="onSearch()" placeholder="Ville, région..." />
+    <div class="price-input">
+      <label for="localite">Localité</label>
+      <input id="localite" type="text" [(ngModel)]="localite" (input)="onSearch()" placeholder="Ville..." />
     </div>
+    <button class="reset-btn" *ngIf="hasFilters" (click)="resetFilters()" aria-label="Reinitialiser les filtres">
+      <span class="material-icons-outlined">close</span>
+    </button>
+  </div>
 
-    <div class="filter-group">
-      <label>Prix min (FCFA)</label>
-      <input type="number" [(ngModel)]="prixMin" (input)="onSearch()" placeholder="0" />
-    </div>
+  <!-- RESULTS GRID -->
+  <div class="product-grid" *ngIf="produits.length; else empty">
+    <app-product-card
+      *ngFor="let p of produits"
+      [link]="'/produits/' + p.id"
+      [image]="getProductImage(p)"
+      [title]="p.titre"
+      [price]="p.prix"
+      [unit]="p.uniteVente"
+      [stock]="p.quantiteDisponible"
+      [location]="p.localite"
+      [verified]="p.vendeurEstVerifie"
+      [category]="p.categorie"
+    ></app-product-card>
+  </div>
 
-    <div class="filter-group">
-      <label>Prix max (FCFA)</label>
-      <input type="number" [(ngModel)]="prixMax" (input)="onSearch()" placeholder="999999" />
-    </div>
-  </aside>
+  <ng-template #empty>
+    <app-empty-state
+      icon="search_off"
+      title="Aucun produit trouvé"
+      description="Essayez de modifier vos filtres"
+      actionLabel="Réinitialiser"
+      actionIcon="restart_alt"
+      *ngIf="hasFilters"
+      (actionClick)="resetFilters()"
+    ></app-empty-state>
+    <app-empty-state
+      icon="search_off"
+      title="Aucun produit trouvé"
+      description="Aucun produit n'est disponible pour le moment"
+      *ngIf="!hasFilters"
+    ></app-empty-state>
+  </ng-template>
 
-  <!-- Résultats -->
-  <main class="results">
-    <div class="results-header">
-      <h2>Produits</h2>
-      <span class="count" *ngIf="totalElements > 0">{{ totalElements }} résultat(s)</span>
-    </div>
-
-    <div class="product-grid" *ngIf="produits.length; else empty">
-      <a *ngFor="let p of produits" [routerLink]="[p.id]" class="product-card">
-        <div class="card-img">{{ p.titre.charAt(0) }}</div>
-        <div class="card-body">
-          <h3>{{ p.titre }}</h3>
-          <p class="price">{{ p.prix | number }} FCFA / {{ p.uniteVente }}</p>
-          <p class="meta">{{ p.localite }} — {{ p.categorie }}</p>
-          <p class="stock" [class.low]="p.quantiteDisponible < 5">
-            {{ p.quantiteDisponible }} dispo.
-          </p>
-        </div>
-      </a>
-    </div>
-
-    <ng-template #empty>
-      <div class="empty">Aucun produit trouvé.</div>
-    </ng-template>
-
-    <!-- Pagination -->
-    <div class="pagination" *ngIf="totalPages > 1">
-      <button (click)="prevPage()" [disabled]="page === 0">← Précédent</button>
-      <span>Page {{ page + 1 }} / {{ totalPages }}</span>
-      <button (click)="nextPage()" [disabled]="page >= totalPages - 1">Suivant →</button>
-    </div>
-  </main>
+  <!-- PAGINATION -->
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button (click)="prevPage()" [disabled]="page === 0" class="page-btn" aria-label="Page precedente">
+      <span class="material-icons-outlined">chevron_left</span>
+    </button>
+    <span class="page-info">{{ page + 1 }} / {{ totalPages }}</span>
+    <button (click)="nextPage()" [disabled]="page >= totalPages - 1" class="page-btn" aria-label="Page suivante">
+      <span class="material-icons-outlined">chevron_right</span>
+    </button>
+  </div>
+  </ng-container>
 </div>

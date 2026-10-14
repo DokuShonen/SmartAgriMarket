@@ -2,13 +2,13 @@
   <h2>Suivi logistique</h2>
 
   <div *ngIf="demandes.length; else empty">
-    <a *ngFor="let d of demandes" [routerLink]="'/logistique/' + d.id" class="card">
+    <a *ngFor="let d of demandes" [routerLink]="'/logistique/' + d.id" class="card stagger-item">
       <div class="card-row">
         <div class="adresse">
           <span class="label">Départ</span>
           <p>{{ d.adresseDepart }}</p>
         </div>
-        <span class="arrow">→</span>
+        <span class="arrow"><span class="material-icons-outlined">arrow_forward</span></span>
         <div class="adresse">
           <span class="label">Arrivée</span>
           <p>{{ d.adresseArrivee }}</p>
@@ -24,7 +24,7 @@
   <ng-template #empty>
     <div class="empty">
       <p>Aucune livraison en cours.</p>
-      <a routerLink="/marketplace/commande" class="btn-link">Voir mes commandes</a>
+      <a routerLink="/profil" class="btn-link">Voir mes commandes</a>
     </div>
   </ng-template>
 </div>

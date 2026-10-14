@@ -38,9 +38,19 @@ public class AnnonceMaterielController {
 
     @PostMapping
     public ResponseEntity<AnnonceMaterielResponse> create(@Valid @RequestBody AnnonceMaterielRequest request) {
+        securityUtil.checkProducteurOuAdmin();
         UUID vendeurId = securityUtil.getCurrentUserId();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(annonceMaterielService.create(vendeurId, request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<AnnonceMaterielResponse> update(
+            @PathVariable UUID id,
+            @Valid @RequestBody AnnonceMaterielRequest request) {
+        securityUtil.checkProducteurOuAdmin();
+        UUID vendeurId = securityUtil.getCurrentUserId();
+        return ResponseEntity.ok(annonceMaterielService.update(id, vendeurId, request));
     }
 
     @DeleteMapping("/{id}")

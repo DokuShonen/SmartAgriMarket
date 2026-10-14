@@ -20,6 +20,9 @@ public class AnnonceMaterielResponse {
     private String localite;
     private UUID vendeurId;
     private String vendeurNom;
+    private String duree;
+    private BigDecimal caution;
+    private String disponibilites;
 
     public static AnnonceMaterielResponse from(AnnonceMateriel a) {
         AnnonceMaterielResponse r = new AnnonceMaterielResponse();
@@ -29,10 +32,13 @@ public class AnnonceMaterielResponse {
         r.prix = a.getPrix();
         r.etat = a.getEtat();
         r.typeTransaction = a.getTypeTransaction();
-        r.photos = a.getPhotos();
+        r.photos = a.getPhotos() != null ? new java.util.ArrayList<>(a.getPhotos()) : new java.util.ArrayList<>();
         r.localite = a.getLocalite();
         r.vendeurId = a.getVendeur().getId();
         r.vendeurNom = a.getVendeur().getPrenom() + " " + a.getVendeur().getNom();
+        r.duree = a.getDuree();
+        r.caution = a.getCaution();
+        r.disponibilites = a.getDisponibilites();
         return r;
     }
 }

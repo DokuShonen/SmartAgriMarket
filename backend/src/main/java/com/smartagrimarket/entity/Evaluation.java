@@ -25,11 +25,11 @@ public class Evaluation {
     @Column(nullable = false)
     private LocalDateTime dateCreation;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "donneur_id", nullable = false)
     private Utilisateur donneur;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "receveur_id", nullable = false)
     private Utilisateur receveur;
 

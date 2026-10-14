@@ -8,4 +8,6 @@ public class UpdateUtilisateurRequest {
     private String prenom;
     private String telephone;
     private String localite;
+    private String photoProfil;
+    private String zoneCouverture;
 }

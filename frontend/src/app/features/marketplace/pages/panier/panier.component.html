@@ -1,33 +1,63 @@
-<div class="panier-container">
-  <h2>Mon panier</h2>
-
-  <div *ngIf="items.length; else emptyPanier">
-    <div class="panier-item" *ngFor="let item of items">
-      <div class="item-img">{{ item.produit.titre.charAt(0) }}</div>
-      <div class="item-info">
-        <a [routerLink]="'/produits/' + item.produit.id" class="item-title">{{ item.produit.titre }}</a>
-        <p class="item-price">{{ item.produit.prix | number }} FCFA / {{ item.produit.uniteVente }}</p>
-        <p class="item-vendeur">{{ item.produit.vendeurNom }} — {{ item.produit.localite }}</p>
-      </div>
-      <div class="item-qty">
-        <button (click)="updateQte(item.produit.id, item.quantite - 1)" [disabled]="item.quantite <= 1">−</button>
-        <span>{{ item.quantite }}</span>
-        <button (click)="updateQte(item.produit.id, item.quantite + 1)" [disabled]="item.quantite >= item.produit.quantiteDisponible">+</button>
-      </div>
-      <div class="item-subtotal">{{ (item.produit.prix * item.quantite) | number }} FCFA</div>
-      <button class="btn-remove" (click)="retirer(item.produit.id)">✕</button>
-    </div>
-
-    <div class="panier-footer">
-      <div class="panier-total">Total : <strong>{{ total | number }} FCFA</strong></div>
-      <a routerLink="/produits/commande" class="btn-checkout">Passer la commande</a>
-    </div>
+<div class="cart-page">
+  <div class="cart-header">
+    <h1>Mon panier</h1>
+    <span class="cart-count" *ngIf="items.length">{{ totalItems }} article(s)</span>
   </div>
 
-  <ng-template #emptyPanier>
-    <div class="empty-panier">
-      <p>Votre panier est vide.</p>
-      <a routerLink="/produits" class="btn-link">Voir les produits</a>
+  <!-- ITEMS LIST -->
+  <div *ngIf="items.length; else emptyCart">
+    <div class="cart-items">
+      <div class="cart-item" *ngFor="let item of items" [attr.aria-label]="item.produit.titre">
+        <div class="item-thumb">{{ item.produit.titre.charAt(0) }}</div>
+        <div class="item-details">
+          <a [routerLink]="'/produits/' + item.produit.id" class="item-name">{{ item.produit.titre }}</a>
+          <p class="item-unit-price">{{ item.produit.prix | number }} FCFA / {{ item.produit.uniteVente }}</p>
+          <div class="item-bottom">
+            <div class="qty-ctrl">
+              <button class="qty-btn" (click)="updateQte(item.produit.id, item.quantite - 1)" [disabled]="item.quantite <= 1" aria-label="Diminuer la quantite">
+                <span class="material-icons-outlined">remove</span>
+              </button>
+              <span class="qty-val">{{ item.quantite }}</span>
+              <button class="qty-btn" (click)="updateQte(item.produit.id, item.quantite + 1)" [disabled]="item.quantite >= item.produit.quantiteDisponible" aria-label="Augmenter la quantite">
+                <span class="material-icons-outlined">add</span>
+              </button>
+            </div>
+            <span class="item-total">{{ (item.produit.prix * item.quantite) | number }} FCFA</span>
+          </div>
+        </div>
+        <button class="remove-btn" (click)="retirer(item.produit.id)" [attr.aria-label]="'Retirer ' + item.produit.titre">
+          <span class="material-icons-outlined">delete_outline</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTINUER LES ACHATS -->
+    <a routerLink="/produits" class="continue-link">
+      <span class="material-icons-outlined">arrow_back</span> Continuer les achats
+    </a>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <ng-template #emptyCart>
+    <div class="empty-cart">
+      <span class="material-icons-outlined">remove_shopping_cart</span>
+      <h3>Votre panier est vide</h3>
+      <p>Parcourez nos produits frais et locaux</p>
+      <a routerLink="/produits" class="btn-shop">
+        <span class="material-icons-outlined">storefront</span> Voir les produits
+      </a>
     </div>
   </ng-template>
+
+  <!-- STICKY BOTTOM BAR -->
+  <div class="checkout-bar" *ngIf="items.length">
+    <div class="checkout-info">
+      <span class="checkout-total">{{ total | number }} FCFA</span>
+      <span class="checkout-label">{{ totalItems }} article(s)</span>
+    </div>
+    <a routerLink="/produits/commande" class="btn-checkout">
+      Valider
+      <span class="material-icons-outlined">arrow_forward</span>
+    </a>
+  </div>
 </div>

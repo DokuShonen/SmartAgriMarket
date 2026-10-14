@@ -3,6 +3,7 @@ package com.smartagrimarket.dto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,6 +13,8 @@ public class CommandeRequest {
     private boolean avecLivraison;
     private String adresseLivraison;
     private String notes;
+    private BigDecimal fraisLivraison;
+    private String modePaiement;
 
     @Data
     public static class LigneCommandeRequest {

@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/cours-semences")
@@ -40,6 +41,23 @@ public class CoursSemenceController {
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(coursSemenceRepository.save(cours));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CoursSemence> update(@PathVariable UUID id, @Valid @RequestBody CreerCoursSemence request) {
+        CoursSemence cours = coursSemenceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cours introuvable"));
+        cours.setProduit(request.getProduit());
+        cours.setPrix(request.getPrix());
+        cours.setLocalite(request.getLocalite());
+        cours.setSource(request.getSource());
+        return ResponseEntity.ok(coursSemenceRepository.save(cours));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        coursSemenceRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     @Data

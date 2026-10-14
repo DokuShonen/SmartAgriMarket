@@ -36,6 +36,15 @@ public class AnnonceMateriel {
     @Column(nullable = false)
     private TypeTransaction typeTransaction;
 
+    @Column(nullable = true)
+    private String duree;
+
+    @Column(nullable = true, precision = 12, scale = 2)
+    private BigDecimal caution;
+
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String disponibilites;
+
     @ElementCollection
     @CollectionTable(name = "annonce_materiel_photos", joinColumns = @JoinColumn(name = "annonce_id"))
     @Column(name = "photo_url")

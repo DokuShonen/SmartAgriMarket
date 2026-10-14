@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NgFor, NgIf, DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DemandeLivraison } from '../../../../core/models/livraison.model';
+import { LogistiqueService } from '../../../../core/services/logistique.service';
 
 @Component({
   selector: 'app-suivi-logistique',
@@ -13,9 +14,10 @@ import { DemandeLivraison } from '../../../../core/models/livraison.model';
 export class SuiviLogistiqueComponent implements OnInit {
   demandes: DemandeLivraison[] = [];
 
+  constructor(private logistiqueService: LogistiqueService) {}
+
   ngOnInit() {
-    // TODO: connect to backend when LivraisonController exposes list by user
-    // this.logistiqueService.getMesDemandes().subscribe(data => this.demandes = data);
+    this.logistiqueService.getMesDemandes().subscribe(data => this.demandes = data);
   }
 
   badgeClass(statut: string): string {

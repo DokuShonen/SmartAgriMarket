@@ -13,6 +13,7 @@ public class ConversationResponse {
     private LocalDateTime dateDebut;
     private boolean estActive;
     private List<String> participants;
+    private List<String> participantsPhotos;
     private List<MessageResponse> messages;
 
     @Data
@@ -24,6 +25,7 @@ public class ConversationResponse {
         private boolean estLu;
         private UUID expediteurId;
         private String expediteurNom;
+        private String expediteurPhoto;
     }
 
     public static ConversationResponse from(Conversation c) {
@@ -35,6 +37,11 @@ public class ConversationResponse {
             r.participants = c.getParticipants().stream()
                     .map(u -> u.getPrenom() + " " + u.getNom())
                     .toList();
+            r.participantsPhotos = c.getParticipants().stream()
+                    .map(u -> u.getPhotoProfil())
+                    .toList();
+        } else {
+            r.participantsPhotos = List.of();
         }
         if (c.getMessages() != null) {
             r.messages = c.getMessages().stream().map(m -> {
@@ -46,8 +53,12 @@ public class ConversationResponse {
                 mr.estLu = m.isEstLu();
                 mr.expediteurId = m.getExpediteur().getId();
                 mr.expediteurNom = m.getExpediteur().getPrenom() + " " + m.getExpediteur().getNom();
+                mr.expediteurPhoto = m.getExpediteur().getPhotoProfil();
                 return mr;
             }).toList();
+        } else {
+            r.messages = List.of();
+            r.participantsPhotos = List.of();
         }
         return r;
     }

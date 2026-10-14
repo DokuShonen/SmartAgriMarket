@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { authGuard } from '../../core/guards/auth.guard';
+import { producteurGuard } from '../../core/guards/producteur.guard';
 
 export const routes: Routes = [
   {
@@ -7,7 +9,8 @@ export const routes: Routes = [
   },
   {
     path: 'ajouter',
-    loadComponent: () => import('./pages/form/form-materiel.component').then(m => m.FormMaterielComponent)
+    loadComponent: () => import('./pages/form/form-materiel.component').then(m => m.FormMaterielComponent),
+    canActivate: [authGuard, producteurGuard]
   },
   {
     path: ':id',

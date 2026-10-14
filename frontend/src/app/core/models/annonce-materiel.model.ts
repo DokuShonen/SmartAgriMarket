@@ -4,9 +4,12 @@ export interface AnnonceMateriel {
   description: string;
   prix: number;
   etat: 'NEUF' | 'OCCASION';
-  typeTransaction: 'VENTE' | 'ECHANGE';
+  typeTransaction: 'VENTE' | 'LOCATION';
   photos: string[];
   localite: string;
   vendeurId: string;
   vendeurNom: string;
+  duree?: string;
+  caution?: number;
+  disponibilites?: string;
 }

@@ -31,7 +31,7 @@ public class ArticleForum {
     @Column(nullable = false)
     private boolean estModere;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "auteur_id", nullable = false)
     private Utilisateur auteur;
 

@@ -1,9 +1,14 @@
 <div class="commande-container">
-  <a routerLink="/produits/panier" class="back-link">← Retour au panier</a>
+  <a routerLink="/produits/panier" class="back-link"><span class="material-icons-outlined">arrow_back</span> Retour au panier</a>
   <h2>Finaliser la commande</h2>
 
   <div *ngIf="success" class="success-msg">
-    ✓ Commande passée avec succès ! Redirection...
+    <span class="material-icons-outlined">check_circle</span>
+    <h3>Commande envoyée au vendeur !</h3>
+    <p>Votre commande a été transmise au vendeur. Vous serez notifié(e) quand il l'aura confirmée. Vous pourrez alors procéder au paiement.</p>
+    <a routerLink="/produits/historique" class="btn-pill" style="display:inline-block;text-decoration:none;color:#fff;padding:0.6rem 1.5rem;margin-top:1rem;">
+      Voir mes commandes
+    </a>
   </div>
 
   <div *ngIf="!success && items.length; else emptyCart">
@@ -13,20 +18,47 @@
         <span>{{ item.produit.titre }} × {{ item.quantite }}</span>
         <span>{{ (item.produit.prix * item.quantite) | number }} FCFA</span>
       </div>
+      <div class="recap-item recap-frais" *ngIf="avecLivraison && fraisLivraisonEstime > 0">
+        <span>Livraison estimée</span>
+        <span>{{ fraisLivraisonEstime | number }} FCFA</span>
+      </div>
       <div class="recap-total">
-        <strong>Total : {{ total | number }} FCFA</strong>
+        <strong>{{ avecLivraison && fraisLivraisonEstime > 0 ? 'Total avec livraison : ' : 'Total : ' }}{{ (avecLivraison && fraisLivraisonEstime > 0 ? totalAvecLivraison : total) | number }} FCFA</strong>
       </div>
     </div>
 
     <div class="livraison-section">
       <label class="checkbox-label">
-        <input type="checkbox" [(ngModel)]="avecLivraison" />
+        <input type="checkbox" [(ngModel)]="avecLivraison" (change)="onLivraisonChange()" />
         Je souhaite une livraison
       </label>
 
       <div *ngIf="avecLivraison" class="adresse-field">
-        <label>Adresse de livraison</label>
-        <textarea [(ngModel)]="adresseLivraison" rows="2" placeholder="Ville, quartier, points de repère..."></textarea>
+        <label>Adresse de livraison *</label>
+        <textarea [(ngModel)]="adresseLivraison" rows="2" placeholder="Saisissez votre adresse complète (quartier, ville)..."></textarea>
+        <button type="button" class="btn-geoloc" (click)="detecterPosition()" [disabled]="localisationEnCours">
+          <span class="material-icons-outlined">{{ localisationEnCours ? 'hourglass_top' : 'my_location' }}</span>
+          {{ localisationEnCours ? 'Recherche...' : 'Détecter ma position' }}
+        </button>
+        <p class="geoloc-hint" *ngIf="!localisationEnCours && !geolocErreur">
+          <span class="material-icons-outlined" style="font-size:0.85rem;vertical-align:middle">info</span>
+          Vous pouvez saisir votre adresse directement ou utiliser la détection automatique
+        </p>
+        <p class="geoloc-error" *ngIf="geolocErreur">
+          <span class="material-icons-outlined" style="font-size:0.85rem;vertical-align:middle">info</span> {{ geolocErreur }}
+        </p>
+        <p class="geoloc-error" *ngIf="geolocErreur">
+          <span class="material-icons-outlined" style="font-size:0.85rem;vertical-align:middle">error</span> {{ geolocErreur }}
+        </p>
+        <div *ngIf="showMap" class="map-section">
+          <div class="map-frame">
+            <iframe [src]="safeMapUrl" width="100%" height="200" style="border:0;border-radius:8px" allowfullscreen loading="lazy"></iframe>
+          </div>
+          <p class="coords">
+            <span class="material-icons-outlined" style="font-size:0.85rem;vertical-align:middle">place</span>
+            {{ lat.toFixed(6) }}, {{ lon.toFixed(6) }}
+          </p>
+        </div>
       </div>
     </div>
 
@@ -35,9 +67,12 @@
       <textarea [(ngModel)]="notes" rows="2" placeholder="Instructions particulières..."></textarea>
     </div>
 
+    <p class="erreur-msg" *ngIf="erreur">{{ erreur }}</p>
+
     <button class="btn-confirmer" (click)="confirmer()" [disabled]="enCours || (avecLivraison && !adresseLivraison)">
-      {{ enCours ? 'Traitement en cours...' : 'Confirmer la commande' }}
+      {{ enCours ? 'Envoi en cours...' : 'Envoyer la commande au vendeur' }}
     </button>
+    <p class="hint">Le vendeur devra confirmer votre commande avant que vous puissiez payer.</p>
   </div>
 
   <ng-template #emptyCart>

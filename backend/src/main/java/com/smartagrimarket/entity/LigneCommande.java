@@ -1,5 +1,6 @@
 package com.smartagrimarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -22,6 +23,7 @@ public class LigneCommande {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal prixUnitaire;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "commande_id", nullable = false)
     private Commande commande;

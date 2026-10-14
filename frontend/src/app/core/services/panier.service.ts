@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, effect, signal } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Produit } from '../models/produit.model';
 
@@ -7,18 +7,35 @@ export interface PanierItem {
   quantite: number;
 }
 
-const STORAGE_KEY = 'smartagri_panier';
-
 @Injectable({ providedIn: 'root' })
 export class PanierService {
-  private items = new BehaviorSubject<PanierItem[]>(this.load());
+  private items = new BehaviorSubject<PanierItem[]>([]);
+  private userId: string | null = null;
+
+  constructor() {
+    const saved = localStorage.getItem('smartagri_user');
+    if (saved) {
+      try {
+        const user = JSON.parse(saved);
+        this.userId = user.id || null;
+      } catch { this.userId = null; }
+    }
+    this.items.next(this.load());
+  }
+
+  setUserId(userId: string | null) {
+    this.userId = userId;
+    this.items.next(this.load());
+  }
 
   getItems(): Observable<PanierItem[]> {
     return this.items.asObservable();
   }
 
   getSnapshot(): PanierItem[] {
-    return this.items.getValue();
+    const v = this.items.getValue();
+    console.log('[PanierService] getSnapshot:', v?.length, 'items, key:', this.getStorageKey());
+    return v;
   }
 
   add(produit: Produit, quantite = 1) {
@@ -61,14 +78,18 @@ export class PanierService {
     return this.getSnapshot().reduce((sum, i) => sum + i.quantite, 0);
   }
 
+  private getStorageKey(): string {
+    return this.userId ? `smartagri_panier_${this.userId}` : 'smartagri_panier_anonymous';
+  }
+
   private load(): PanierItem[] {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      return JSON.parse(localStorage.getItem(this.getStorageKey()) || '[]');
     } catch { return []; }
   }
 
   private save(items: PanierItem[]) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    localStorage.setItem(this.getStorageKey(), JSON.stringify(items));
     this.items.next(items);
   }
 }

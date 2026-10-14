@@ -1,113 +1,398 @@
-<!-- Hero -->
-<section class="hero">
-  <div class="container hero-content">
-    <h1>Le marché agricole, <br>directement du producteur</h1>
-    <p>Achetez et vendez sans intermédiaire sur la première marketplace agricole</p>
-    <div class="search-bar">
-      <input
-        type="text"
-        [(ngModel)]="searchQuery"
-        placeholder="Rechercher un produit, une localité..."
-        (keyup.enter)="searchQuery && onSearch()"
-      />
-      <button [routerLink]="'/produits'">Rechercher</button>
-    </div>
-  </div>
-</section>
+<app-loading *ngIf="chargement || erreur" [message]="messageChargement" [erreur]="erreur" (retry)="charger()"></app-loading>
 
-<!-- Catégories -->
-<section class="section" *ngIf="categories.length">
-  <div class="container">
-    <h2 class="section-title">Catégories</h2>
-    <div class="categories-grid">
-      <a
-        *ngFor="let c of categories"
-        [routerLink]="'/produits'"
-        class="category-card"
-      >
-        <span class="category-icon">🌾</span>
-        <span class="category-name">{{ c.nom }}</span>
+<!-- ======== HOMEPAGE ANONYME ======== -->
+<ng-container *ngIf="!auth.isLoggedIn && !chargement && !erreur">
+
+    <!-- HERO — Diaporama plein ecran -->
+  <section class="hero" [class.visible]="visible" (touchstart)="onSwipeStart($event)" (touchend)="onSwipeEnd($event)">
+    <div class="hero-bg">
+      <div class="hero-slides" [style.transform]="'translateX(-' + (slideIndex * 100) + '%)'">
+        <img *ngFor="let s of slides" [src]="s.image" alt="" class="hero-img" />
+      </div>
+      <div class="hero-overlay"></div>
+    </div>
+    <div class="container hero-content">
+      <div class="hero-text">
+        <span class="hero-badge">
+          <span class="material-icons-outlined">verified</span>
+          {{ slides[slideIndex].badge }}
+        </span>
+        <h1 [innerHTML]="slides[slideIndex].titre"></h1>
+        <p>{{ slides[slideIndex].description }}</p>
+        <div class="hero-actions">
+          <a [routerLink]="slides[slideIndex].lien" class="btn-pill">
+            <span class="material-icons-outlined">storefront</span>
+            {{ slides[slideIndex].cta }}
+          </a>
+          <a routerLink="/inscription" class="btn-pill-outline light">
+            Devenir vendeur
+          </a>
+        </div>
+      </div>
+      <!-- Dots -->
+      <div class="hero-dots">
+        <button *ngFor="let s of slides; let i = index" class="hero-dot" [class.active]="i === slideIndex" (click)="goToSlide(i)"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST BAR — 3 items compacts -->
+  <section class="trust-bar reveal">
+    <div class="container">
+      <div class="trust-items">
+        <div class="trust-item">
+          <span class="material-icons-outlined">local_shipping</span>
+          <span>Livraison rapide</span>
+        </div>
+        <div class="trust-item">
+          <span class="material-icons-outlined">payments</span>
+          <span>Paiement sécurisé</span>
+        </div>
+        <div class="trust-item">
+          <span class="material-icons-outlined">verified_user</span>
+          <span>Vendeurs vérifiés</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATÉGORIES — chips scrollables -->
+  <section class="section-app reveal" *ngIf="categories.length">
+    <div class="section-row">
+      <h2 class="section-title">Catégories</h2>
+      <a routerLink="/produits" class="see-all">Tout voir <span class="material-icons-outlined">arrow_forward</span></a>
+    </div>
+    <div class="hscroll">
+      <a *ngFor="let c of categories" routerLink="/produits" class="chip-item">
+        <span class="material-icons-outlined">{{ getCategoryIcon(c.nom) }}</span>
+        {{ c.nom }}
       </a>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- Produits vedettes -->
-<section class="section bg-light" *ngIf="produitsVedettes.length">
-  <div class="container">
-    <h2 class="section-title">Produits vedettes de la semaine</h2>
-    <div class="product-grid">
-      <a
-        *ngFor="let v of produitsVedettes"
-        [routerLink]="'/produits/' + v.produit.id"
-        class="product-card"
-      >
-        <div class="card-img">{{ v.produit.titre.charAt(0) }}</div>
+  <!-- COURS DES SEMENCES -->
+  <section class="section-sonagess reveal" *ngIf="coursSemences.length">
+    <div class="sonagess-header">
+      <span class="sonagess-badge">
+        <span class="material-icons-outlined">verified</span>
+        Cours des semences
+      </span>
+      <p class="sonagess-desc">Prix de référence — Sources: SIM SONAGESS / N'Kalo</p>
+    </div>
+    <div class="hscroll">
+      <div *ngFor="let c of coursSemences" class="sonagess-chip">
+        <div class="sonagess-chip-price">
+          <span class="sonagess-chip-value">{{ c.prix | number }}</span>
+          <span class="sonagess-chip-currency">FCFA</span>
+        </div>
+        <span class="sonagess-chip-produit">{{ c.produit }}</span>
+        <span class="sonagess-chip-loc">
+          <span class="material-icons-outlined">location_on</span> {{ c.localite }}
+        </span>
+        <span class="sonagess-chip-source" *ngIf="c.source">{{ c.source }}</span>
+        <span class="sonagess-chip-date" *ngIf="c.dateMAJ">MAJ: {{ c.dateMAJ | date:'dd/MM' }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUITS VEDETTES — cartes scroll snap -->
+  <section class="section-app reveal" *ngIf="produitsVedettes.length">
+    <div class="section-row">
+      <h2 class="section-title">Produits vedettes</h2>
+      <a routerLink="/produits" class="see-all">Tout voir <span class="material-icons-outlined">arrow_forward</span></a>
+    </div>
+    <div class="hscroll snap">
+      <a *ngFor="let v of produitsVedettes; let i = index" [routerLink]="'/produits/' + v.produit.id" class="card-scroll">
+        <div class="card-img-wrap">
+          <img [src]="getProductImage(v.produit, i)" [alt]="v.produit.titre" loading="lazy" />
+          <span class="card-badge">Vedette</span>
+        </div>
         <div class="card-body">
           <h3>{{ v.produit.titre }}</h3>
-          <p class="price">{{ v.produit.prix | number }} FCFA / {{ v.produit.uniteVente }}</p>
-          <p class="meta">{{ v.produit.localite }} — {{ v.produit.categorie }}</p>
+          <p class="price">{{ v.produit.prix | number }} FCFA</p>
+          <p class="meta">
+            <span class="material-icons-outlined">location_on</span>
+            {{ v.produit.localite }}
+          </p>
         </div>
       </a>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- Cours des semences -->
-<section class="section" *ngIf="coursSemences.length">
-  <div class="container">
-    <h2 class="section-title">Cours des semences</h2>
-    <div class="filter-bar">
-      <select [(ngModel)]="semenceFilter">
-        <option value="">Toutes les localités</option>
-        <option *ngFor="let l of uniqueLocalites" [value]="l">{{ l }}</option>
-      </select>
+  <!-- DERNIÈRES ANNONCES — grid 2 colonnes -->
+  <section class="section-app reveal" *ngIf="derniersProduits.length">
+    <div class="section-row">
+      <h2 class="section-title">Dernières annonces</h2>
+      <a routerLink="/produits" class="see-all">Tout voir <span class="material-icons-outlined">arrow_forward</span></a>
     </div>
-    <div class="table-wrapper">
-      <table class="price-table">
-        <thead>
-          <tr>
-            <th>Produit</th>
-            <th>Prix (FCFA)</th>
-            <th>Localité</th>
-            <th>Dernière mise à jour</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let s of filteredSemences">
-            <td>{{ s.produit }}</td>
-            <td><strong>{{ s.prix | number }}</strong></td>
-            <td>{{ s.localite }}</td>
-            <td class="date-cell">{{ s.dateMAJ | date:'dd/MM/yyyy' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- Dernières annonces -->
-<section class="section bg-light" *ngIf="derniersProduits.length">
-  <div class="container">
-    <h2 class="section-title">Dernières annonces</h2>
-    <div class="product-grid">
-      <a
-        *ngFor="let p of derniersProduits"
-        [routerLink]="'/produits/' + p.id"
-        class="product-card"
-      >
-        <div class="card-img">{{ p.titre.charAt(0) }}</div>
+    <div class="grid-2">
+      <a *ngFor="let p of derniersProduits; let i = index" [routerLink]="'/produits/' + p.id" class="grid-card">
+        <div class="card-img-wrap">
+          <img [src]="getProductImage(p, i)" [alt]="p.titre" loading="lazy" />
+          <span class="stock-pill" [class.low]="p.quantiteDisponible < 5">{{ p.quantiteDisponible }} dispo</span>
+        </div>
         <div class="card-body">
           <h3>{{ p.titre }}</h3>
-          <p class="price">{{ p.prix | number }} FCFA / {{ p.uniteVente }}</p>
-          <p class="meta">{{ p.localite }} — {{ p.categorie }}</p>
+          <p class="price">{{ p.prix | number }} FCFA <span class="unit">/ {{ p.uniteVente }}</span></p>
+          <p class="meta">
+            <span class="material-icons-outlined">location_on</span>
+            {{ p.localite }}
+          </p>
         </div>
       </a>
     </div>
-    <div class="text-center">
-      <a routerLink="/produits" class="btn-link">Voir tous les produits →</a>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="section-app reveal">
+    <div class="cta-banner">
+      <div class="cta-inner">
+        <h2>Vous êtes producteur ?</h2>
+        <p>Vendez directement aux acheteurs. Pas d'intermédiaire, des prix que vous contrôlez.</p>
+        <a routerLink="/inscription" class="btn-pill">
+          <span class="material-icons-outlined">add_business</span>
+          Créer mon compte
+        </a>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
+</ng-container>
 
+<!-- ======== HOMEPAGE CONNECTÉE ======== -->
+<ng-container *ngIf="auth.isLoggedIn && !chargement && !erreur">
+
+  <!-- SALUTATION + ACCÈS RAPIDES -->
+  <section class="greeting-section reveal">
+    <div class="container">
+      <div class="greeting-row">
+        <div>
+          <span class="greeting-label">Bonjour,</span>
+          <h1 class="greeting-name">{{ greetName }}</h1>
+        </div>
+        <a routerLink="/profil" class="greeting-avatar" [class.has-photo]="!!auth.utilisateur()?.photoProfil">
+          <img *ngIf="auth.utilisateur()?.photoProfil" [src]="auth.utilisateur()!.photoProfil" (error)="auth.utilisateur()!.photoProfil = undefined" class="avatar-img" />
+          <span class="avatar-initial" *ngIf="!auth.utilisateur()?.photoProfil">{{ (auth.utilisateur()?.prenom || '?').charAt(0).toUpperCase() }}</span>
+        </a>
+      </div>
+      <!-- QUICK ACTIONS — Admin -->
+      <ng-container *ngIf="isAdmin; else regularQuickActions">
+        <div class="quick-list">
+          <a [routerLink]="['/admin']" [queryParams]="{tab: 'stats'}" class="quick-card">
+            <div class="qc-icon purple"><span class="material-icons-outlined">dashboard</span></div>
+            <div class="qc-text">
+              <span class="qc-label">Dashboard</span>
+              <span class="qc-hint">Statistiques & modération</span>
+            </div>
+            <span class="material-icons-outlined qc-arrow">chevron_right</span>
+          </a>
+          <a [routerLink]="['/admin']" [queryParams]="{tab: 'utilisateurs'}" class="quick-card">
+            <div class="qc-icon blue"><span class="material-icons-outlined">group</span></div>
+            <div class="qc-text">
+              <span class="qc-label">Utilisateurs</span>
+              <span class="qc-hint">Gérer les comptes</span>
+            </div>
+            <span class="material-icons-outlined qc-arrow">chevron_right</span>
+          </a>
+          <a [routerLink]="['/admin']" [queryParams]="{tab: 'forum'}" class="quick-card">
+            <div class="qc-icon indigo"><span class="material-icons-outlined">forum</span></div>
+            <div class="qc-text">
+              <span class="qc-label">Forum</span>
+              <span class="qc-hint">Modérer les articles</span>
+            </div>
+            <span class="material-icons-outlined qc-arrow">chevron_right</span>
+          </a>
+          <a [routerLink]="['/admin']" [queryParams]="{tab: 'messages'}" class="quick-card">
+            <div class="qc-icon amber"><span class="material-icons-outlined">chat</span></div>
+            <div class="qc-text">
+              <span class="qc-label">Messages</span>
+              <span class="qc-hint">Modérer les conversations</span>
+            </div>
+            <span class="material-icons-outlined qc-arrow">chevron_right</span>
+          </a>
+          <a [routerLink]="['/admin']" [queryParams]="{tab: 'signalements'}" class="quick-card">
+            <div class="qc-icon red"><span class="material-icons-outlined">flag</span></div>
+            <div class="qc-text">
+              <span class="qc-label">Signalements</span>
+              <span class="qc-hint">Traiter les signalements</span>
+            </div>
+            <span class="material-icons-outlined qc-arrow">chevron_right</span>
+          </a>
+          <a [routerLink]="['/admin']" [queryParams]="{tab: 'badges'}" class="quick-card">
+            <div class="qc-icon" style="background:#e8f5e9;color:#2e7d32"><span class="material-icons-outlined">verified</span></div>
+            <div class="qc-text">
+              <span class="qc-label">Badges</span>
+              <span class="qc-hint">Vérifier les demandes</span>
+            </div>
+            <span class="material-icons-outlined qc-arrow">chevron_right</span>
+          </a>
+        </div>
+      </ng-container>
+
+      <!-- QUICK ACTIONS — Regular -->
+      <ng-template #regularQuickActions>
+        <div class="quick-list">
+        <a routerLink="/produits" class="quick-card">
+          <div class="qc-icon"><span class="material-icons-outlined">storefront</span></div>
+          <div class="qc-text">
+            <span class="qc-label">Produits</span>
+            <span class="qc-hint">Parcourir le catalogue</span>
+          </div>
+          <span class="material-icons-outlined qc-arrow">chevron_right</span>
+        </a>
+
+        <a routerLink="/produits/panier" class="quick-card" *ngIf="isAcheteur">
+          <div class="qc-icon orange"><span class="material-icons-outlined">shopping_cart</span></div>
+          <div class="qc-text">
+            <span class="qc-label">Panier</span>
+            <span class="qc-hint">{{ panierCount }} article(s)</span>
+          </div>
+          <span class="material-icons-outlined qc-arrow">chevron_right</span>
+        </a>
+
+        <a routerLink="/produits/dashboard" class="quick-card" *ngIf="isProducteur">
+          <div class="qc-icon blue"><span class="material-icons-outlined">dashboard</span></div>
+          <div class="qc-text">
+            <span class="qc-label">Mes produits</span>
+            <span class="qc-hint">Gérer mes annonces</span>
+          </div>
+          <span class="material-icons-outlined qc-arrow">chevron_right</span>
+        </a>
+
+        <a routerLink="/produits/ventes" class="quick-card" *ngIf="isProducteur">
+          <div class="qc-icon purple"><span class="material-icons-outlined">point_of_sale</span></div>
+          <div class="qc-text">
+            <span class="qc-label">Ventes</span>
+            <span class="qc-hint">Suivre mes commandes</span>
+          </div>
+          <span class="material-icons-outlined qc-arrow">chevron_right</span>
+        </a>
+
+        <a routerLink="/materiel" class="quick-card">
+          <div class="qc-icon teal"><span class="material-icons-outlined">agriculture</span></div>
+          <div class="qc-text">
+            <span class="qc-label">Matériel</span>
+            <span class="qc-hint">Vente ou location</span>
+          </div>
+          <span class="material-icons-outlined qc-arrow">chevron_right</span>
+        </a>
+
+        <a routerLink="/forum" class="quick-card">
+          <div class="qc-icon indigo"><span class="material-icons-outlined">forum</span></div>
+          <div class="qc-text">
+            <span class="qc-label">Forum</span>
+            <span class="qc-hint">Discussions</span>
+          </div>
+          <span class="material-icons-outlined qc-arrow">chevron_right</span>
+        </a>
+
+        <a routerLink="/messagerie" class="quick-card">
+          <div class="qc-icon amber"><span class="material-icons-outlined">chat</span></div>
+          <div class="qc-text">
+            <span class="qc-label">Messages</span>
+            <span class="qc-hint">Messagerie</span>
+          </div>
+          <span class="material-icons-outlined qc-arrow">chevron_right</span>
+        </a>
+
+        <a routerLink="/produits/historique" class="quick-card" *ngIf="isAcheteur">
+          <div class="qc-icon red"><span class="material-icons-outlined">receipt_long</span></div>
+          <div class="qc-text">
+            <span class="qc-label">Commandes</span>
+            <span class="qc-hint">Historique</span>
+          </div>
+          <span class="material-icons-outlined qc-arrow">chevron_right</span>
+        </a>
+      </div>
+      </ng-template>
+    </div>
+  </section>
+
+  <!-- COURS DES SEMENCES -->
+  <section class="section-sonagess reveal" *ngIf="coursSemences.length && !isAdmin">
+    <div class="sonagess-header">
+      <span class="sonagess-badge">
+        <span class="material-icons-outlined">verified</span>
+        Cours des semences
+      </span>
+      <p class="sonagess-desc">Prix de référence — Sources: SIM SONAGESS / N'Kalo</p>
+    </div>
+    <div class="hscroll">
+      <div *ngFor="let c of coursSemences" class="sonagess-chip">
+        <div class="sonagess-chip-price">
+          <span class="sonagess-chip-value">{{ c.prix | number }}</span>
+          <span class="sonagess-chip-currency">FCFA</span>
+        </div>
+        <span class="sonagess-chip-produit">{{ c.produit }}</span>
+        <span class="sonagess-chip-loc">
+          <span class="material-icons-outlined">location_on</span> {{ c.localite }}
+        </span>
+        <span class="sonagess-chip-source" *ngIf="c.source">{{ c.source }}</span>
+        <span class="sonagess-chip-date" *ngIf="c.dateMAJ">MAJ: {{ c.dateMAJ | date:'dd/MM' }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATÉGORIES — chips scrollables -->
+  <section class="section-app reveal" *ngIf="categories.length && !isAdmin">
+    <div class="section-row">
+      <h2 class="section-title">Catégories</h2>
+      <a routerLink="/produits" class="see-all">Tout voir <span class="material-icons-outlined">arrow_forward</span></a>
+    </div>
+    <div class="hscroll">
+      <a *ngFor="let c of categories" routerLink="/produits" class="chip-item">
+        <span class="material-icons-outlined">{{ getCategoryIcon(c.nom) }}</span>
+        {{ c.nom }}
+      </a>
+    </div>
+  </section>
+
+  <!-- PRODUITS VEDETTES — cartes scroll snap -->
+  <section class="section-app reveal" *ngIf="produitsVedettes.length && !isAdmin">
+    <div class="section-row">
+      <h2 class="section-title">Produits vedettes</h2>
+      <a routerLink="/produits" class="see-all">Tout voir <span class="material-icons-outlined">arrow_forward</span></a>
+    </div>
+    <div class="hscroll snap">
+      <a *ngFor="let v of produitsVedettes; let i = index" [routerLink]="'/produits/' + v.produit.id" class="card-scroll">
+        <div class="card-img-wrap">
+          <img [src]="getProductImage(v.produit, i)" [alt]="v.produit.titre" loading="lazy" />
+          <span class="card-badge">Vedette</span>
+        </div>
+        <div class="card-body">
+          <h3>{{ v.produit.titre }}</h3>
+          <p class="price">{{ v.produit.prix | number }} FCFA</p>
+          <p class="meta">
+            <span class="material-icons-outlined">location_on</span>
+            {{ v.produit.localite }}
+          </p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- DERNIÈRES ANNONCES — grid 2 colonnes -->
+  <section class="section-app reveal" *ngIf="derniersProduits.length && !isAdmin">
+    <div class="section-row">
+      <h2 class="section-title">Dernières annonces</h2>
+      <a routerLink="/produits" class="see-all">Tout voir <span class="material-icons-outlined">arrow_forward</span></a>
+    </div>
+    <div class="grid-2">
+      <a *ngFor="let p of derniersProduits; let i = index" [routerLink]="'/produits/' + p.id" class="grid-card">
+        <div class="card-img-wrap">
+          <img [src]="getProductImage(p, i)" [alt]="p.titre" loading="lazy" />
+          <span class="stock-pill" [class.low]="p.quantiteDisponible < 5">{{ p.quantiteDisponible }} dispo</span>
+        </div>
+        <div class="card-body">
+          <h3>{{ p.titre }}</h3>
+          <p class="price">{{ p.prix | number }} FCFA <span class="unit">/ {{ p.uniteVente }}</span></p>
+          <p class="meta">
+            <span class="material-icons-outlined">location_on</span>
+            {{ p.localite }}
+          </p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</ng-container>

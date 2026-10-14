@@ -1,8 +1,8 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/smartagrimarket
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    username: ${DB_USERNAME:smartagri}
+    password: ${DB_PASSWORD:smartagri}
   jpa:
     hibernate:
       ddl-auto: update
@@ -10,13 +10,24 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 server:
   port: 8080
 
 jwt:
   secret: ${JWT_SECRET:SmartAgriMarket2026SecretKeyWithEnoughLengthForHmacSha256!!}
-  expiration: 86400000
+  expiration: 604800000
+
+sms:
+  provider: ${SMS_PROVIDER:logging}
+  orange:
+    api-url: ${ORANGE_SMS_API_URL:https://api.orange.com}
+    client-id: ${ORANGE_SMS_CLIENT_ID:}
+    client-secret: ${ORANGE_SMS_CLIENT_SECRET:}
 
 logging:
   level:

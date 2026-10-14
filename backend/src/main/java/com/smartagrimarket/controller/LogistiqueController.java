@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,6 +21,11 @@ public class LogistiqueController {
 
     private final LogistiqueService logistiqueService;
     private final SecurityUtil securityUtil;
+
+    @GetMapping("/calculer-frais")
+    public ResponseEntity<BigDecimal> calculerFrais(@RequestParam Float distanceKm) {
+        return ResponseEntity.ok(logistiqueService.calculerFrais(distanceKm));
+    }
 
     @PostMapping("/demandes/{commandeId}")
     public ResponseEntity<DemandeLivraison> createDemande(
@@ -44,5 +50,22 @@ public class LogistiqueController {
     @GetMapping("/demandes/{demandeId}/suivi")
     public ResponseEntity<List<SuiviLivraison>> getSuivi(@PathVariable UUID demandeId) {
         return ResponseEntity.ok(logistiqueService.getSuivi(demandeId));
+    }
+
+    @GetMapping("/mes-demandes")
+    public ResponseEntity<List<DemandeLivraison>> getMesDemandes() {
+        UUID userId = securityUtil.getCurrentUserId();
+        return ResponseEntity.ok(logistiqueService.getMesDemandes(userId));
+    }
+
+    @GetMapping("/en-attente")
+    public ResponseEntity<List<DemandeLivraison>> getDemandesEnAttente() {
+        return ResponseEntity.ok(logistiqueService.getDemandesEnAttente());
+    }
+
+    @GetMapping("/mes-livraisons")
+    public ResponseEntity<List<DemandeLivraison>> getMesLivraisons() {
+        UUID userId = securityUtil.getCurrentUserId();
+        return ResponseEntity.ok(logistiqueService.getMesLivraisonsAssignees(userId));
     }
 }

@@ -25,7 +25,7 @@ public class ProduitVedette {
     @Column(nullable = false)
     private boolean estActive;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "produit_id", nullable = false)
     private Produit produit;
 }

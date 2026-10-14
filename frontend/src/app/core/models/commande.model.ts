@@ -10,6 +10,8 @@ export interface Commande {
   acheteurNom: string;
   producteurId: string;
   producteurNom: string;
+  modePaiement?: string;
+  paiementStatut?: string;
   lignes: LigneCommande[];
 }
 

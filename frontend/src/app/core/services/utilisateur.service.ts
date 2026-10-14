@@ -10,7 +10,7 @@ export class UtilisateurService extends ApiService {
     return this.http.get<Utilisateur>(`${this.baseUrl}/utilisateurs/me`);
   }
 
-  updateMe(data: { nom?: string; prenom?: string; telephone?: string; localite?: string }): Observable<Utilisateur> {
+  updateMe(data: { nom?: string; prenom?: string; telephone?: string; localite?: string; photoProfil?: string }): Observable<Utilisateur> {
     return this.http.put<Utilisateur>(`${this.baseUrl}/utilisateurs/me`, data);
   }
 
@@ -20,5 +20,17 @@ export class UtilisateurService extends ApiService {
 
   deleteUser(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/utilisateurs/${id}`);
+  }
+
+  toggleVerification(id: string): Observable<Utilisateur> {
+    return this.http.patch<Utilisateur>(`${this.baseUrl}/utilisateurs/${id}/verifier`, {});
+  }
+
+  toggleSuspension(id: string): Observable<Utilisateur> {
+    return this.http.patch<Utilisateur>(`${this.baseUrl}/utilisateurs/${id}/suspendre`, {});
+  }
+
+  updatePseudo(data: { pseudo: string }): Observable<Utilisateur> {
+    return this.http.put<Utilisateur>(`${this.baseUrl}/utilisateurs/me/pseudo`, data);
   }
 }

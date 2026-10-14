@@ -15,7 +15,7 @@ node "Serveur Frontend (Angular)" {
   [Application SPA Angular]
   [CoreModule]
   [SharedModule]
-  [Feature Modules]
+  [Feature Modules (accueil, admin, auth, forum, logistique, marketplace, materiel, messagerie, profil)]
 }
 
 node "Serveur Backend (Spring Boot)" {
@@ -25,8 +25,20 @@ node "Serveur Backend (Spring Boot)" {
   [CommandeController]
   [MessagerieController]
   [CoursSemenceController]
+  [PrixSonagessController]
   [ProduitVedetteController]
   [CategorieController]
+  [AnnonceMaterielController]
+  [EchangeController]
+  [EvaluationController]
+  [ForumController]
+  [CommentaireController]
+  [LogistiqueController]
+  [SignalementController]
+  [NotificationController]
+  [UploadController]
+  [UtilisateurController]
+  [AdminController]
 }
 
 node "Couche Service" {
@@ -34,6 +46,16 @@ node "Couche Service" {
   [ProduitService]
   [CommandeService]
   [MessagerieService]
+  [EvaluationService]
+  [LogistiqueService]
+  [NotificationService]
+  [ForumService]
+  [CommentaireService]
+  [EchangeService]
+  [AnnonceMaterielService]
+  [UtilisateurService]
+  [PrixSonagessService]
+  [ContactFilterService]
 }
 
 node "Couche Persistance (JPA / Hibernate)" {
@@ -42,17 +64,30 @@ node "Couche Persistance (JPA / Hibernate)" {
   [CommandeRepository]
   [ConversationRepository]
   [MessageRepository]
+  [CategorieRepository]
+  [EvaluationRepository]
+  [DemandeLivraisonRepository]
+  [SuiviLivraisonRepository]
+  [NotificationRepository]
+  [CoursSemenceRepository]
+  [PrixSonagessRepository]
+  [ProduitVedetteRepository]
+  [AnnonceMaterielRepository]
+  [PropositionEchangeRepository]
+  [ArticleForumRepository]
+  [CommentaireRepository]
+  [ContenuApprentissageRepository]
+  [SignalementRepository]
+  [LigneCommandeRepository]
+  [PaiementRepository]
 }
 
 node "Base de donnees" {
   [PostgreSQL]
-  [Redis (Cache)]
-  [MinIO / S3 (Fichiers)]
 }
 
 node "Services Externes" {
-  [YengaPay / Mobile Money]
-  [API SMS]
+  [Orange SMS API]
 }
 
 [Navigateur Web] --> [CDN]
@@ -64,11 +99,8 @@ node "Services Externes" {
 [Couche Service] --> [Couche Persistance (JPA / Hibernate)]
 
 [Couche Persistance (JPA / Hibernate)] --> [PostgreSQL]
-[Couche Persistance (JPA / Hibernate)] --> [Redis (Cache)]
 
-[Serveur Backend (Spring Boot)] --> [YengaPay / Mobile Money]
-[Serveur Backend (Spring Boot)] --> [API SMS]
-[Serveur Backend (Spring Boot)] --> [MinIO / S3 (Fichiers)]
+[Serveur Backend (Spring Boot)] --> [Orange SMS API]
 
 @enduml
 ```

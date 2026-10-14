@@ -17,4 +17,7 @@ public class AnnonceMaterielRequest {
     @NotNull private TypeTransaction typeTransaction;
     private List<String> photos;
     @NotBlank private String localite;
+    private String duree;
+    private BigDecimal caution;
+    private String disponibilites;
 }

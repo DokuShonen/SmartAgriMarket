@@ -10,6 +10,10 @@ export class ForumService extends ApiService {
     return this.http.get<ArticleForum[]>(`${this.baseUrl}/forum/articles`);
   }
 
+  rechercherArticles(keyword: string): Observable<ArticleForum[]> {
+    return this.http.get<ArticleForum[]>(`${this.baseUrl}/forum/articles/recherche?q=${encodeURIComponent(keyword)}`);
+  }
+
   getArticlesByCategorie(categorie: string): Observable<ArticleForum[]> {
     return this.http.get<ArticleForum[]>(`${this.baseUrl}/forum/articles/categorie/${categorie}`);
   }
@@ -22,11 +26,23 @@ export class ForumService extends ApiService {
     return this.http.get<ContenuApprentissage[]>(`${this.baseUrl}/forum/apprentissage`);
   }
 
+  getApprentissageById(id: string): Observable<ContenuApprentissage> {
+    return this.http.get<ContenuApprentissage>(`${this.baseUrl}/forum/apprentissage/${id}`);
+  }
+
   modererArticle(id: string, estModere: boolean): Observable<ArticleForum> {
     return this.http.patch<ArticleForum>(`${this.baseUrl}/forum/articles/${id}/moderer?estModere=${estModere}`, {});
   }
 
+  supprimerArticle(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/forum/articles/${id}`);
+  }
+
   validerContenu(id: string): Observable<ContenuApprentissage> {
     return this.http.patch<ContenuApprentissage>(`${this.baseUrl}/forum/apprentissage/${id}/valider`, {});
+  }
+
+  supprimerApprentissage(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/forum/apprentissage/${id}`);
   }
 }

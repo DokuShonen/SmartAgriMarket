@@ -17,6 +17,13 @@ public class UtilisateurResponse {
     private TypeUtilisateur type;
     private LocalDateTime dateInscription;
     private boolean estVerifie;
+    private boolean estSuspendu;
+    private int violationsCount;
+    private String pseudoForum;
+    private String cooperative;
+    private String photoCertificationBio;
+    private String photoProfil;
+    private String zoneCouverture;
 
     public static UtilisateurResponse from(Utilisateur u) {
         UtilisateurResponse r = new UtilisateurResponse();
@@ -29,6 +36,13 @@ public class UtilisateurResponse {
         r.type = u.getType();
         r.dateInscription = u.getDateInscription();
         r.estVerifie = u.isEstVerifie();
+        r.estSuspendu = u.isEstSuspendu();
+        r.violationsCount = u.getViolationsCount();
+        r.pseudoForum = u.getPseudoForum();
+        r.cooperative = u.getCooperative();
+        r.photoCertificationBio = u.getPhotoCertificationBio();
+        r.photoProfil = u.getPhotoProfil();
+        r.zoneCouverture = u.getZoneCouverture();
         return r;
     }
 }

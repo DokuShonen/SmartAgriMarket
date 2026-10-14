@@ -27,7 +27,11 @@ public class ContenuApprentissage {
     @Column(nullable = false)
     private boolean estValide;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "auteur_id")
+    private Utilisateur auteur;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "valide_par_id")
     private Utilisateur validePar;
 }

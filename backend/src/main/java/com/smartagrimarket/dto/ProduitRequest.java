@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,4 +20,6 @@ public class ProduitRequest {
     @NotBlank private String localite;
     private List<String> photos;
     private String conditionsLivraison;
+    private LocalDate dateRecolte;
+    private String ficheTechnique;
 }

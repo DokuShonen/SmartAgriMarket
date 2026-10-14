@@ -22,6 +22,8 @@ public class CommandeResponse {
     private String acheteurNom;
     private UUID producteurId;
     private String producteurNom;
+    private String modePaiement;
+    private String paiementStatut;
     private List<LigneResponse> lignes;
 
     @Data
@@ -45,6 +47,10 @@ public class CommandeResponse {
         r.acheteurNom = c.getAcheteur().getPrenom() + " " + c.getAcheteur().getNom();
         r.producteurId = c.getProducteur().getId();
         r.producteurNom = c.getProducteur().getPrenom() + " " + c.getProducteur().getNom();
+        r.modePaiement = c.getModePaiement();
+        if (c.getPaiement() != null) {
+            r.paiementStatut = c.getPaiement().getStatut();
+        }
         if (c.getLignes() != null) {
             r.lignes = c.getLignes().stream().map(l -> {
                 LigneResponse lr = new LigneResponse();

@@ -30,10 +30,10 @@ export class ProduitService extends ApiService {
     if (params.keyword) httpParams = httpParams.set('keyword', params.keyword);
     if (params.categorieId) httpParams = httpParams.set('categorieId', params.categorieId);
     if (params.localite) httpParams = httpParams.set('localite', params.localite);
-    if (params.prixMin) httpParams = httpParams.set('prixMin', params.prixMin);
-    if (params.prixMax) httpParams = httpParams.set('prixMax', params.prixMax);
-    if (params.page) httpParams = httpParams.set('page', params.page);
-    if (params.size) httpParams = httpParams.set('size', params.size);
+    if (params.prixMin != null) httpParams = httpParams.set('prixMin', params.prixMin);
+    if (params.prixMax != null) httpParams = httpParams.set('prixMax', params.prixMax);
+    if (params.page != null) httpParams = httpParams.set('page', params.page);
+    if (params.size != null) httpParams = httpParams.set('size', params.size);
     return this.http.get<PageResponse<Produit>>(`${this.baseUrl}/produits`, { params: httpParams });
   }
 
@@ -45,12 +45,20 @@ export class ProduitService extends ApiService {
     return this.http.get<Produit[]>(`${this.baseUrl}/produits/vendeur/${vendeurId}`);
   }
 
+  getMesProduits(): Observable<Produit[]> {
+    return this.http.get<Produit[]>(`${this.baseUrl}/produits/vendeur/me`);
+  }
+
   create(data: Partial<Produit>): Observable<Produit> {
     return this.http.post<Produit>(`${this.baseUrl}/produits`, data);
   }
 
   update(id: string, data: Partial<Produit>): Observable<Produit> {
     return this.http.put<Produit>(`${this.baseUrl}/produits/${id}`, data);
+  }
+
+  toggleActif(id: string): Observable<Produit> {
+    return this.http.patch<Produit>(`${this.baseUrl}/produits/${id}/toggle-actif`, {});
   }
 
   delete(id: string): Observable<void> {

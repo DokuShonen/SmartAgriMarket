@@ -3,6 +3,7 @@ export interface Conversation {
   dateDebut: string;
   estActive: boolean;
   participants: string[];
+  participantsPhotos?: string[];
   messages: Message[];
 }
 
@@ -14,4 +15,5 @@ export interface Message {
   estLu: boolean;
   expediteurId: string;
   expediteurNom: string;
+  expediteurPhoto?: string;
 }

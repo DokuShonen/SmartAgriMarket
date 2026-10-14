@@ -1,5 +1,6 @@
 package com.smartagrimarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -24,6 +25,7 @@ public class SuiviLivraison {
     @Column(nullable = false)
     private LocalDateTime dateMAJ;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "demande_livraison_id", nullable = false)
     private DemandeLivraison demandeLivraison;

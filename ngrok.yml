@@ -1,0 +1,10 @@
+version: "2"
+# Mettez votre jeton d'authentification ngrok ici
+authtoken: 2zOEBv4NXHPnJlgYErMezKZudFm_5csYFuw4L9Ay5QiwXWCff
+tunnels:
+  backend:
+    proto: http
+    addr: 127.0.0.1:8080
+  frontend:
+    proto: http
+    addr: 127.0.0.1:4200

@@ -5,17 +5,21 @@
 }
 
 .back-link {
-  color: #1a5c2a;
+  color: var(--g-700);
   text-decoration: none;
   font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
 }
+.back-link:hover { text-decoration: underline; }
 
-h2 { font-size: 1.4rem; margin: 0.75rem 0 1.25rem; }
+h2 { font-family: var(--font-display); font-size: 1.4rem; margin: 0.75rem 0 1.25rem; }
 
 .recap {
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+  border: 1px solid var(--n-100);
+  border-radius: var(--radius);
   padding: 1rem;
   margin-bottom: 1.25rem;
 }
@@ -27,7 +31,7 @@ h2 { font-size: 1.4rem; margin: 0.75rem 0 1.25rem; }
   justify-content: space-between;
   padding: 0.4rem 0;
   font-size: 0.9rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--n-100);
 }
 
 .recap-total {
@@ -48,49 +52,155 @@ h2 { font-size: 1.4rem; margin: 0.75rem 0 1.25rem; }
   cursor: pointer;
 }
 
-.adresse-field, .notes-section {
+.adresse-field {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
 }
 
+.adresse-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.adresse-row textarea {
+  flex: 1;
+}
+
+.btn-geoloc {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--g-50);
+  border: 1px solid var(--g-200);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--brand);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+  width: fit-content;
+}
+.btn-geoloc:hover { background: var(--g-100); border-color: var(--g-300); }
+.btn-geoloc:disabled { opacity: 0.5; cursor: default; }
+.btn-geoloc .material-icons-outlined { font-size: 16px; }
+
+.geoloc-hint {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-top: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.geoloc-error {
+  font-size: 0.78rem;
+  color: var(--brand);
+  background: var(--g-50);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  margin-top: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.map-section {
+  margin-top: 0.5rem;
+}
+
+.map-frame {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--n-200);
+}
+
+.coords {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.maps-link {
+  color: var(--g-700);
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: auto;
+}
+.maps-link:hover { text-decoration: underline; }
+
 .adresse-field label, .notes-section label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #555;
+  color: var(--n-600);
+}
+
+.notes-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
 }
 
 textarea {
   width: 100%;
   padding: 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  border: 1px solid var(--n-300);
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
   resize: vertical;
   font-family: inherit;
+  transition: border-color 0.2s;
 }
+textarea:focus { outline: none; border-color: var(--g-500); }
 
 .btn-confirmer {
   width: 100%;
   padding: 0.85rem;
-  background: #1a5c2a;
+  background: var(--g-700);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
+  transition: all 0.2s;
 }
-.btn-confirmer:hover { background: #2e7d32; }
+.btn-confirmer:hover { background: var(--g-600); }
 .btn-confirmer:disabled { opacity: 0.5; cursor: default; }
 
 .success-msg {
-  background: #e8f5e9;
-  color: #1a5c2a;
-  padding: 1rem;
-  border-radius: 8px;
-  font-weight: 600;
+  background: var(--g-50);
+  color: var(--g-700);
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  text-align: center;
+}
+.success-msg h3 { margin: 0.5rem 0 0.3rem; font-size: 1.1rem; }
+.success-msg p { font-size: 0.9rem; color: var(--n-600); margin: 0; }
+
+.erreur-msg {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
   text-align: center;
 }
 
-.empty { text-align: center; padding: 3rem; color: #888; }
+.hint {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.empty { text-align: center; padding: 3rem; color: var(--text-dim); }

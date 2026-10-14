@@ -1,28 +1,76 @@
-<div class="materiel-container">
-  <div class="materiel-header">
-    <h2>Bourse d'échange de matériel agricole</h2>
-    <a routerLink="/materiel/ajouter" class="btn-add">+ Publier une annonce</a>
+<div class="equip-page">
+  <div class="equip-header">
+    <h1>Matériel</h1>
+    <p class="equip-count">{{ filtrees.length }} annonce(s)</p>
   </div>
 
-  <div class="filter-tabs">
-    <button [class.active]="!filtreType" (click)="filtreType = ''">Tout</button>
-    <button [class.active]="filtreType === 'VENTE'" (click)="filtreType = 'VENTE'">Vente</button>
-    <button [class.active]="filtreType === 'ECHANGE'" (click)="filtreType = 'ECHANGE'">Échange</button>
-  </div>
+  <app-loading *ngIf="chargement || erreur" [erreur]="erreur" (retry)="load()"></app-loading>
 
-  <div class="grid" *ngIf="filtrees.length; else empty">
-    <a *ngFor="let a of filtrees" [routerLink]="[a.id]" class="card">
-      <div class="card-img">{{ a.titre.charAt(0) }}</div>
-      <div class="card-body">
-        <h3>{{ a.titre }}</h3>
-        <p class="badge" [class.vente]="a.typeTransaction === 'VENTE'" [class.echange]="a.typeTransaction === 'ECHANGE'">
-          {{ a.typeTransaction === 'VENTE' ? 'Vente' : 'Échange' }}
-        </p>
-        <p class="price">{{ a.prix ? (a.prix | number) + ' FCFA' : 'Prix à discuter' }}</p>
-        <p class="meta">{{ a.etat === 'NEUF' ? 'Neuf' : 'Occasion' }} — {{ a.localite }}</p>
+  <ng-container *ngIf="!chargement && !erreur">
+    <div class="filter-chips">
+      <button class="chip" [class.active]="!filtreType" (click)="filtreType = ''">Tout</button>
+      <button class="chip" [class.active]="filtreType === 'VENTE'" (click)="filtreType = 'VENTE'">
+        <span class="material-icons-outlined">sell</span> Vente
+      </button>
+      <button class="chip" [class.active]="filtreType === 'LOCATION'" (click)="filtreType = 'LOCATION'">
+        <span class="material-icons-outlined">schedule</span> Location
+      </button>
+    </div>
+
+    <div class="equip-grid" *ngIf="filtrees.length; else empty">
+      <a *ngFor="let a of filtrees" [routerLink]="[a.id]" class="equip-card">
+        <div class="card-img-wrap">
+          <img *ngIf="a.photos?.length" [src]="a.photos[0]" [alt]="a.titre" class="card-img" loading="lazy" />
+          <div *ngIf="!a.photos?.length" class="card-img-placeholder">
+            <span class="material-icons-outlined">agriculture</span>
+          </div>
+          <span class="type-badge" [class.vente]="a.typeTransaction === 'VENTE'" [class.location]="a.typeTransaction === 'LOCATION'">
+            {{ a.typeTransaction === 'VENTE' ? 'Vente' : 'Location' }}
+          </span>
+          <div class="card-actions" *ngIf="isOwner(a)" (click)="$event.preventDefault(); $event.stopPropagation()">
+            <button class="card-action-btn" (click)="openEdit(a); $event.preventDefault(); $event.stopPropagation()" aria-label="Modifier l'annonce">
+              <span class="material-icons-outlined">edit</span>
+            </button>
+            <button class="card-action-btn card-action-danger" (click)="supprimer(a); $event.preventDefault(); $event.stopPropagation()" aria-label="Supprimer l'annonce">
+              <span class="material-icons-outlined">delete</span>
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <h3>{{ a.titre }}</h3>
+          <p class="card-price">{{ a.prix ? (a.prix | number) + ' FCFA' : 'Prix à discuter' }}</p>
+          <div class="card-info">
+            <span class="info-tag">
+              <span class="material-icons-outlined">{{ a.etat === 'NEUF' ? 'new_releases' : 'history' }}</span>
+              {{ a.etat === 'NEUF' ? 'Neuf' : 'Occasion' }}
+            </span>
+            <span class="info-tag">
+              <span class="material-icons-outlined">location_on</span>
+              {{ a.localite }}
+            </span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <ng-template #empty>
+      <div class="empty-state">
+        <span class="material-icons-outlined">agriculture</span>
+        <h3>Aucune annonce</h3>
+        <p>Publiez du matériel en vente ou en location</p>
       </div>
-    </a>
-  </div>
+    </ng-template>
+  </ng-container>
 
-  <ng-template #empty><div class="empty">Aucune annonce pour le moment.</div></ng-template>
+  <button class="fab" (click)="showForm = true" *ngIf="peutPublier && !chargement" aria-label="Publier une annonce">
+    <span class="material-icons-outlined">add</span>
+  </button>
 </div>
+
+<app-modal [open]="showForm" titre="Nouvelle annonce" (closed)="showForm = false; load()">
+  <app-form-materiel (saved)="showForm = false; load()" (cancelled)="showForm = false"></app-form-materiel>
+</app-modal>
+
+<app-modal [open]="!!editAnnonce" titre="Modifier l'annonce" (closed)="editAnnonce = null">
+  <app-form-materiel *ngIf="editAnnonce" [editId]="editAnnonce.id" [initialData]="editAnnonce" (saved)="editAnnonce = null; load()" (cancelled)="editAnnonce = null"></app-form-materiel>
+</app-modal>

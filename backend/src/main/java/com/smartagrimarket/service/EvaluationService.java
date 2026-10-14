@@ -7,6 +7,7 @@ import com.smartagrimarket.repository.EvaluationRepository;
 import com.smartagrimarket.repository.UtilisateurRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ public class EvaluationService {
 
     private final EvaluationRepository evaluationRepository;
     private final UtilisateurRepository utilisateurRepository;
+    private final NotificationService notificationService;
 
     public Evaluation create(UUID donneurId, EvaluationRequest request) {
         Utilisateur donneur = utilisateurRepository.findById(donneurId)
@@ -30,9 +32,20 @@ public class EvaluationService {
                 .receveur(receveur)
                 .build();
 
-        return evaluationRepository.save(evaluation);
+        Evaluation saved = evaluationRepository.save(evaluation);
+
+        try {
+            notificationService.creer(receveur.getId(), "Nouvelle évaluation",
+                    donneur.getPrenom() + " " + donneur.getNom() + " vous a attribué " + request.getNote() + "/5",
+                    "EVALUATION", "/profil");
+        } catch (Exception e) {
+            System.err.println("Erreur notification évaluation: " + e.getMessage());
+        }
+
+        return saved;
     }
 
+    @Transactional(readOnly = true)
     public List<Evaluation> getByReceveur(UUID receveurId) {
         return evaluationRepository.findByReceveurId(receveurId);
     }

@@ -26,8 +26,12 @@ enum TypeUtilisateur {
   PRODUCTEUR
   ACHETEUR
   ADMIN
+  SUPER_ADMIN
   LOGISTIQUE
   AGENT_RELAIS
+  MODERATION_SUPPORT
+  MODERATION_FORUM
+  ADMIN_TECHNIQUE
 }
 
 class Utilisateur {
@@ -41,35 +45,34 @@ class Utilisateur {
   +type: TypeUtilisateur
   +dateInscription: DateTime
   +estVerifie: Boolean
-  +afficherCoordonnees()
-  +modifierProfil()
+  +estSuspendu: Boolean
+  +violationsCount: Int
+  +pseudoForum: String
+  +cnib: String
+  +cooperative: String
+  +photoCertificationBio: String
+  +photoProfil: String
 }
 
 class Producteur {
   +noteMoyenne: Float
   +nombreVentes: Int
-  +publierAnnonce()
-  +gererStock()
-  +repondreMessage()
 }
 
 class Acheteur {
-  +ajouterAuPanier()
-  +passerCommande()
-  +suivreLivraison()
 }
 
 class Administrateur {
-  +validerCompteVendeur()
-  +modererContenu()
-  +gererProduitsVedettes()
-  +publierCoursSemences()
+}
+
+class SuperAdmin {
 }
 
 class PartenaireLogistique {
   +zoneCouverture: String
-  +prendreEnCharge()
-  +mettreAJourStatut()
+}
+
+class AgentRelais {
 }
 
 class Produit {
@@ -79,19 +82,21 @@ class Produit {
   +prix: BigDecimal
   +uniteVente: String
   +quantiteDisponible: Int
-  +categorie: String
+  +categorie: Categorie
   +localite: String
   +photos: List<String>
   +datePublication: DateTime
   +conditionsLivraison: String
-  +modifierAnnonce()
-  +mettreAJourStock()
+  +estActif: Boolean
+  +vendeur: Utilisateur
 }
 
 class Categorie {
   +id: UUID
   +nom: String
   +description: String
+  +imageUrl: String
+  +parent: Categorie
 }
 
 class AnnonceMateriel {
@@ -103,7 +108,18 @@ class AnnonceMateriel {
   +typeTransaction: TypeTransaction
   +photos: List<String>
   +localite: String
-  +proposerEchange()
+  +estActive: Boolean
+  +datePublication: DateTime
+  +vendeur: Utilisateur
+}
+
+class PropositionEchange {
+  +id: UUID
+  +message: String
+  +statut: String
+  +dateCreation: DateTime
+  +annonceMateriel: AnnonceMateriel
+  +proposant: Utilisateur
 }
 
 class Commande {
@@ -114,14 +130,14 @@ class Commande {
   +fraisLivraison: BigDecimal
   +adresseLivraison: String
   +notes: String
-  +confirmer()
-  +annuler()
-  +mettreAJourStatut()
+  +acheteur: Utilisateur
+  +producteur: Utilisateur
 }
 
 class LigneCommande {
   +quantite: Int
   +prixUnitaire: BigDecimal
+  +produit: Produit
 }
 
 class Paiement {
@@ -131,8 +147,7 @@ class Paiement {
   +reference: String
   +statut: String
   +datePaiement: DateTime
-  +effectuer()
-  +rembourser()
+  +commande: Commande
 }
 
 class Evaluation {
@@ -140,23 +155,25 @@ class Evaluation {
   +note: Int
   +commentaire: String
   +dateCreation: DateTime
+  +donneur: Utilisateur
+  +receveur: Utilisateur
 }
 
 class Conversation {
   +id: UUID
   +dateDebut: DateTime
   +estActive: Boolean
-  +envoyerMessage()
-  +bloquerContournement()
+  +participants: List<Utilisateur>
 }
 
 class Message {
   +id: UUID
   +contenu: String
+  +contenuFiltre: String
   +dateEnvoi: DateTime
   +estLu: Boolean
-  +contenuFiltre: String
-  +filtrerCoordonnees()
+  +expediteur: Utilisateur
+  +conversation: Conversation
 }
 
 class DemandeLivraison {
@@ -167,6 +184,9 @@ class DemandeLivraison {
   +frais: BigDecimal
   +statut: String
   +datePriseEnCharge: DateTime
+  +dateCreation: DateTime
+  +commande: Commande
+  +partenaire: Utilisateur
 }
 
 class SuiviLivraison {
@@ -174,6 +194,7 @@ class SuiviLivraison {
   +statut: String
   +localisation: String
   +dateMAJ: DateTime
+  +demandeLivraison: DemandeLivraison
 }
 
 class ArticleForum {
@@ -183,6 +204,20 @@ class ArticleForum {
   +categorie: String
   +datePublication: DateTime
   +estModere: Boolean
+  +auteur: Utilisateur
+}
+
+class Commentaire {
+  +id: UUID
+  +contenu: String
+  +likes: Int
+  +dateCreation: DateTime
+  +auteur: Utilisateur
+  +article: ArticleForum
+  +contenuApprentissage: ContenuApprentissage
+  +parent: Commentaire
+  +reponses: List<Commentaire>
+  +likedPar: List<Utilisateur>
 }
 
 class ContenuApprentissage {
@@ -191,6 +226,7 @@ class ContenuApprentissage {
   +typeContenu: String
   +contenu: String
   +estValide: Boolean
+  +auteur: Utilisateur
 }
 
 class CoursSemence {
@@ -202,19 +238,52 @@ class CoursSemence {
   +source: String
 }
 
+class PrixSonagess {
+  +id: UUID
+  +produit: String
+  +categorie: String
+  +prix: BigDecimal
+  +unite: String
+  +dateMAJ: DateTime
+}
+
 class ProduitVedette {
   +id: UUID
   +dateDebut: DateTime
   +dateFin: DateTime
   +estActive: Boolean
+  +produit: Produit
 }
 
-' --- Associations ---
+class Signalement {
+  +id: UUID
+  +cibleId: UUID
+  +type: String
+  +motif: String
+  +dateCreation: DateTime
+  +auteur: Utilisateur
+}
+
+class Notification {
+  +id: UUID
+  +type: String
+  +message: String
+  +estLu: Boolean
+  +dateCreation: DateTime
+  +referenceId: UUID
+  +destinataire: Utilisateur
+}
+
+' --- Héritage utilisateurs ---
 
 Utilisateur <|-- Producteur
 Utilisateur <|-- Acheteur
 Utilisateur <|-- Administrateur
+Utilisateur <|-- SuperAdmin
 Utilisateur <|-- PartenaireLogistique
+Utilisateur <|-- AgentRelais
+
+' --- Associations ---
 
 Producteur "1" -- "*" Produit : publie
 Acheteur "1" -- "*" Commande : passe
@@ -224,8 +293,9 @@ Produit "1" -- "*" LigneCommande
 Commande "1" -- "1" Paiement
 Produit "*" -- "1" Categorie
 
-Producteur "1" -- "*" AnnonceMateriel
-Acheteur "1" -- "*" AnnonceMateriel : achete/echange
+Producteur "1" -- "*" AnnonceMateriel : publie
+AnnonceMateriel "1" -- "*" PropositionEchange : recoit
+Utilisateur "1" -- "*" PropositionEchange : propose
 
 Utilisateur "1" -- "*" Evaluation : donne
 Utilisateur "1" -- "*" Evaluation : recoit
@@ -235,12 +305,22 @@ Utilisateur "*" -- "*" Conversation : participe
 
 Commande "1" -- "1" DemandeLivraison
 DemandeLivraison "1" -- "*" SuiviLivraison
+PartenaireLogistique "1" -- "*" DemandeLivraison : prend en charge
 
-CoursSemence "*" -- Produit
-ProduitVedette "*" -- Produit
+Utilisateur "1" -- "*" ArticleForum : publie
+ArticleForum "1" -- "*" Commentaire : contient
+Commentaire "1" -- "*" Commentaire : reponse
+Utilisateur "*" -- "*" Commentaire : like
+Administrateur "1" -- "*" ContenuApprentissage : valide
 
-Utilisateur "*" -- "*" ArticleForum : publie
-Administrateur "*" -- "*" ContenuApprentissage : valide
+ProduitVedette "*" -- "1" Produit
+
+Utilisateur "1" -- "*" Signalement : signale
+Utilisateur "1" -- "*" Notification : recoit
+
+AgentRelais "1" -- "*" CoursSemence : saisit
+
+Administrateur "1" -- "*" PrixSonagess : gere
 
 @enduml
 ```
