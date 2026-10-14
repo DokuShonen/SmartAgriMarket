@@ -80,6 +80,19 @@ docker compose logs -f backend
 
 Voir [INSTALL.md](INSTALL.md) pour les instructions détaillées (Linux, Windows, macOS).
 
+## Déploiement gratuit (Render)
+
+```bash
+# 1. Le dépôt est déjà sur GitHub : https://github.com/DokuShonen/SmartAgriMarket
+# 2. render.com → New + → Blueprint → sélectionner ce dépôt
+# 3. Apply : crée le service web (plan free) + une Postgres free, puis un push sur main
+#    redéploie automatiquement
+```
+
+Blueprint [`render.yaml`](render.yaml) + [`Dockerfile.render`](Dockerfile.render) : un seul
+conteneur (nginx + Angular + Spring Boot), base PostgreSQL gérée par Render. Limites et
+migration vers une base gratuite permanente (Neon) : voir [INSTALL.md](INSTALL.md).
+
 ## Données de démonstration & images
 
 - Le seed est généré par `backend/src/main/java/com/smartagrimarket/config/DataInitializer.java`

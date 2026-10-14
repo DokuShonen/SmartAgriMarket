@@ -1,0 +1,29 @@
+# Render Blueprint : déploiement gratuit (plan free) sur https://render.com
+# - 1 service web Docker (image unique : Angular + Spring Boot + nginx)
+# - 1 Render Postgres free (expire 30 jours après création — voir INSTALL.md)
+services:
+  - type: web
+    name: smartagrimarket
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile.render
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: smartagrimarket-db
+          property: connectionString
+
+databases:
+  - name: smartagrimarket-db
+    plan: free
+    region: frankfurt
+    databaseName: smartagrimarket
+    user: smartagri
+    postgresMajorVersion: "16"

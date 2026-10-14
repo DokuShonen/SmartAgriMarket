@@ -1,0 +1,37 @@
+# syntax=docker/dockerfile:1
+# Image unique pour le déploiement gratuit sur Render :
+# Angular + Spring Boot + nginx dans un seul conteneur (un seul service web).
+# Le build Maven ici est EN LIGNE (Render a un accès réseau normal).
+# Pour un build local hors-ligne, utiliser docker-compose (Dockerfile.backend + contexte m2).
+
+FROM node:20-bookworm-slim AS frontend
+WORKDIR /app
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
+COPY frontend/.npmrc frontend/package.json frontend/package-lock.json ./
+RUN npm ci --legacy-peer-deps
+COPY frontend/ ./
+RUN npx ng build --configuration production
+
+FROM maven:3.9-eclipse-temurin-21 AS backend
+WORKDIR /app
+ENV MAVEN_OPTS="-Djava.net.preferIPv4Stack=true"
+COPY backend/pom.xml ./pom.xml
+RUN mvn -B -q dependency:go-offline || true
+COPY backend/src ./src
+RUN mvn -B -DskipTests package
+
+FROM nginx:1.27-alpine
+RUN apk add --no-cache openjdk21-jre-headless
+ENV PORT=10000 \
+    BACKEND_PORT=8081 \
+    SERVER_PORT=8081 \
+    SPRING_PROFILES_ACTIVE=prod \
+    UPLOAD_DIR=/app/uploads \
+    JAVA_OPTS="-Xms64m -Xmx320m"
+COPY --from=frontend /app/dist/smartagrimarket-frontend/browser /usr/share/nginx/html
+COPY --from=backend /app/target/*.jar /app/app.jar
+COPY backend/uploads /app/uploads
+COPY deploy/nginx-render.conf.template /etc/nginx/templates/default.conf.template
+COPY deploy/40-start-backend.sh /docker-entrypoint.d/40-start-backend.sh
+RUN chmod +x /docker-entrypoint.d/40-start-backend.sh
+EXPOSE 10000

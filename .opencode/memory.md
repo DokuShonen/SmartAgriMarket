@@ -81,7 +81,7 @@ frontend/src/app/
   (doublons de `backend/uploads/`, 0 référence dans le code)
 
 ## Docker (testé et fonctionnel le 13/10/2026)
-- `nginx.conf` : locations `/api/` **et `/uploads/`` proxygés vers `backend:8080`
+- `nginx.conf` : locations `/api/`, `/ws` (WebSocket) **et `/uploads/`** proxygés vers `backend:8080`
 - `Dockerfile.backend` : `COPY backend/uploads ./uploads` + dépôt Maven local injecté
   via `build.additional_contexts.m2` → `mvn -o package` (Central inaccessible des conteneurs,
   débit ~5-30 kB/s) ; `MAVEN_OPTS=-Djava.net.preferIPv4Stack=true`
@@ -95,9 +95,23 @@ frontend/src/app/
 - Stack vérifiée : db healthy, backend `/api/health` OK, seed PostgreSQL OK,
   nginx sert l'app + proxy `/api` et `/uploads` (200)
 
+## Render (déploiement gratuit, prêt le 14/10/2026)
+- `render.yaml` (Blueprint) : web free (Docker, frankfurt) + Postgres free (expire 30 j)
+- `Dockerfile.render` : image unique nginx:1.27-alpine + JRE 21 (apk) ; stages node (ng build
+  prod) + maven **en ligne** (pas de contexte m2 — Render a un bon réseau) ; `JAVA_OPTS=-Xmx320m`
+  (RAM free = 512 Mo) ; `EXPOSE 10000` (env `PORT=10000`)
+- `deploy/40-start-backend.sh` (dans `/docker-entrypoint.d/` de l'image nginx) : convertit
+  `DATABASE_URL` postgres:// en `SPRING_DATASOURCE_URL` jdbc (via PG* si dispo, sinon parsing),
+  lance java sur 8081, attend `/api/health` (180 s max), puis nginx démarre
+- `deploy/nginx-render.conf.template` : même proxy que nginx.conf mais `127.0.0.1:${BACKEND_PORT}`
+- `websocket.service.ts` : `wss://` auto sur pages https (fix pour Render qui est en HTTPS)
+- Testé en local (image runtime + Postgres 16 jetable, `DATABASE_URL` simulé) :
+  health 200 en 24 s, SPA 200, `/api/categories` OK, seed OK, `/uploads/*.jpg` 200, WS 101
+
 ## URLs
 - Dev : frontend `http://localhost:4200` (ng serve --poll=2000) → API `localhost:8080`
 - Docker : `http://localhost:8082` (nginx) → API `localhost:8080` → pg `localhost:5434`
+- Render : `https://smartagrimarket-xxxx.onrender.com` (après Apply du Blueprint)
 
 ## Bloqueurs connus
 - PostgreSQL local : impossible de se connecter (pas de sudo pour modifier pg_hba.conf)

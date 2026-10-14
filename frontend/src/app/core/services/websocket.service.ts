@@ -11,7 +11,7 @@ export class WebSocketService implements OnDestroy {
 
   constructor() {
     const wsUrl = environment.wsUrl === 'auto'
-      ? `ws://${window.location.host}/ws`
+      ? `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`
       : environment.wsUrl;
 
     this.client = new Client({

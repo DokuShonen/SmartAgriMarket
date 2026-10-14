@@ -153,11 +153,56 @@ Détails d'implémentation :
 - `Dockerfile.frontend` : `npm ci` puis build Angular (`ng build --configuration production`)
   puis nginx. L'inlining des Google Fonts est désactivé (`angular.json` →
   `optimization.fonts.inline: false`) : il échouait sans accès à fonts.googleapis.com.
-- `nginx.conf` : `location /api/` et `location /uploads/` sont proxygés vers `backend:8080`
-  — indispensable, sinon les photos de matériel renvoient 404.
+- `nginx.conf` : `location /api/`, `/ws` (WebSocket) et `/uploads/` sont proxygés vers
+  `backend:8080` — indispensable, sinon les photos de matériel renvoient 404 et les
+  notifications temps réel ne fonctionnent pas.
 - `.dockerignore` : exclut `node_modules`, `dist`, `target`, `.angular`.
 - `frontend/.npmrc` : `legacy-peer-deps=true` — requis par `npm ci` dans le conteneur
   (`ng2-charts@10` déclare des peers Angular ≥ 21 alors que le projet est en Angular 18).
+
+---
+
+## Déploiement gratuit sur Render
+
+Un Blueprint `render.yaml` est fourni à la racine : **1 service web Docker (plan free)** +
+**1 Render Postgres free**, région Frankfurt.
+
+### Étapes
+
+1. Le dépôt est déjà sur GitHub : https://github.com/DokuShonen/SmartAgriMarket
+2. Sur https://render.com → **New +** → **Blueprint** → connectez le compte GitHub et ce dépôt.
+3. Render lit `render.yaml` → cliquez **Apply** (crée `smartagrimarket` + `smartagrimarket-db`).
+4. Attendez le premier build (~5-10 min : `npm ci`, `ng build`, `mvn package` en ligne).
+5. Ouvrez l'URL publique `https://smartagrimarket-xxxx.onrender.com`.
+
+L'application tourne dans **un seul conteneur** (`Dockerfile.render`) : nginx sert Angular et
+proxygise `/api/`, `/ws` et `/uploads/` vers Spring Boot (port interne 8081). Le script
+`deploy/40-start-backend.sh` convertit `DATABASE_URL` (format `postgres://…`) en JDBC et
+attend `/api/health` avant de lancer nginx.
+
+### Limites du plan gratuit
+
+| Élément | Limite |
+|---------|--------|
+| Service web | 512 Mo RAM, 0,1 CPU, 750 h/mois ; s'endort après 15 min d'inactivité (~1 min de réveil) |
+| Render Postgres | 256 Mo RAM, 1 Go disque ; **expire 30 jours après création** (14 j de grâce) |
+| Fichiers uploadés | Non persistants : recopiés depuis l'image au redémarrage ; les uploads des utilisateurs sont perdus au redeploy |
+
+### Quand la base expire (au bout de 30 jours)
+
+Créez une base gratuite permanente chez **Neon** (https://neon.tech) ou **Aiven**, puis dans le
+dashboard Render du service web, mettez à jour la variable `DATABASE_URL` :
+
+```
+DATABASE_URL=postgresql://user:password@host:5432/neondb?sslmode=require
+```
+
+(`deploy/40-start-backend.sh` gère aussi le format `postgresql://…?sslmode=require` de Neon.)
+
+### Redéploiement
+
+Push sur `main` → Render redéploie automatiquement. `JWT_SECRET` est généré au premier
+Apply (jamais versionné).
 
 ---
 
