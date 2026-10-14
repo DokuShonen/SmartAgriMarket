@@ -62,11 +62,29 @@ frontend/src/app/
 ## Ce qui fonctionne / a été testé
 - [x] Backend compile et démarre avec profil dev (H2)
 - [x] Frontend build et serve (--poll=2000)
+- [x] `npx ng build --configuration production` OK (warnings budget only)
 - [x] CORS configuré (localhost:4200 → localhost:8080)
 - [x] Login / Register via API (curl + navigateur)
 - [x] Données de seed visibles via API REST
 - [x] Tous les modules frontend chargés (lazy)
 - [x] AdminGuard, AuthGuard
+- [x] `/uploads/**` servis par Spring + proxy dev (proxy.conf.json) et nginx
+
+## Images du seed (état au 13/10/2026)
+- Produits → `frontend/src/assets/product-*.jpg` (chemin relatif, servi par Angular)
+- Matériel → `/uploads/materiel-*.jpg` (fichiers dans `backend/uploads/`, servis par Spring,
+  proxy dev `/uploads` → :8080, proxy nginx `/uploads/` → backend)
+- Remplacements récents (sources CC sur Wikimedia Commons, voir `CREDITS_IMAGES.md`) :
+  product-jus (bissap), product-tomate, materiel-moulin, materiel-pulverisateur, materiel-filets
+- Assets inutilisés (candidats au nettoyage) : `agriculture-bg.jpg`, `hero-farm.jpg`,
+  `hero-farm2.jpg`, `hero-agriculture.jpg`, `leaf.png`, et les 7 `assets/materiel-*.jpg`
+  (doublons de `backend/uploads/`, 0 référence dans le code)
+
+## Docker
+- `nginx.conf` : location `/uploads/` proxygé vers backend (ajouté le 13/10)
+- `Dockerfile.backend` : `COPY backend/uploads ./uploads` (seed d'images dans le volume nommé)
+- `Dockerfile.frontend` : chemin de sortie corrigé → `dist/smartagrimarket-frontend/browser`
+- `.dockerignore` ajouté (node_modules, dist, target, .angular)
 
 ## Bloqueurs connus
 - PostgreSQL local : impossible de se connecter (pas de sudo pour modifier pg_hba.conf)
