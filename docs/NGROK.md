@@ -4,14 +4,14 @@
 
 | Service  | URL |
 |----------|-----|
-| Frontend | https://a56b-102-179-158-119.ngrok-free.app |
-| Backend  | https://1c9a-102-179-158-119.ngrok-free.app |
+| Frontend | https://b9db-102-180-208-245.ngrok-free.app |
+| Backend  | https://58dd-102-180-208-245.ngrok-free.app |
 
 ## Demarrage
 
 ```bash
-# Depuis la racine du projet
-ngrok start --config ngrok.yml backend frontend
+# Depuis la racine du projet (config dans docs/ngrok.yml)
+ngrok start --config docs/ngrok.yml backend frontend
 ```
 
 Ou avec le script dev :
@@ -30,7 +30,7 @@ curl -sSL https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz |
 ngrok config add-authtoken 2zOEBv4NXHPnJlgYErMezKZudFm_5csYFuw4L9Ay5QiwXWCff
 
 # Demarrer
-ngrok start --config ngrok.yml backend frontend
+ngrok start --config docs/ngrok.yml backend frontend
 ```
 
 ## Notes
